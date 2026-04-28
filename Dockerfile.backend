@@ -1,0 +1,34 @@
+FROM python:3.11-slim
+
+# Install system dependencies for PDF manipulation and OCR
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libreoffice \
+    tesseract-ocr \
+    tesseract-ocr-eng \
+    libffi-dev \
+    libmupdf-dev \
+    mupdf-tools \
+    python3-dev \
+    libpango-1.0-0 \
+    libpangoft2-1.0-0 \
+    libharfbuzz-subset0 \
+    # WeasyPrint dependencies
+    python3-cffi \
+    python3-brotli \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install python dependencies
+RUN pip install --no-cache-dir fastapi uvicorn[standard] PyMuPDF pikepdf pdfplumber Pillow pytesseract WeasyPrint python-docx openpyxl python-pptx celery redis python-multipart pydantic pydantic-settings aiofiles
+
+COPY backend/ /app/
+
+# Port for FastAPI
+EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
