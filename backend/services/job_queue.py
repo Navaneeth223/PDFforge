@@ -281,3 +281,49 @@ def process_metadata_job(self, job_id: str, session_id: str, file_path: str,
     _update(self, "PROGRESS", {"progress": 20, "message": "Writing metadata…"})
     out = write_metadata(session_id, file_path, title, author, subject, keywords, creator)
     return {"output_path": out, "progress": 100}
+
+
+# ─── Number Pages ─────────────────────────────────────────────────────────────
+
+@celery_app.task(bind=True, name="tasks.number_pages")
+def process_number_pages_job(self, job_id: str, session_id: str, file_path: str,
+                              h_align: str, v_align: str, start_number: int,
+                              font_size: int, prefix: str, suffix: str):
+    from .pdf_engine import add_page_numbers
+    _update(self, "PROGRESS", {"progress": 20, "message": "Stamping page numbers…"})
+    out = add_page_numbers(session_id, file_path, h_align, v_align,
+                           start_number, font_size, prefix, suffix)
+    return {"output_path": out, "progress": 100}
+
+
+# ─── Crop ─────────────────────────────────────────────────────────────────────
+
+@celery_app.task(bind=True, name="tasks.crop")
+def process_crop_job(self, job_id: str, session_id: str, file_path: str,
+                     top: float, right: float, bottom: float, left: float,
+                     pages: str):
+    from .pdf_engine import crop_pdf
+    _update(self, "PROGRESS", {"progress": 20, "message": "Cropping pages…"})
+    out = crop_pdf(session_id, file_path, top, right, bottom, left, pages)
+    return {"output_path": out, "progress": 100}
+
+
+# ─── Compare ──────────────────────────────────────────────────────────────────
+
+@celery_app.task(bind=True, name="tasks.compare")
+def process_compare_job(self, job_id: str, session_id: str,
+                         path_a: str, path_b: str):
+    from .pdf_engine import compare_pdfs
+    _update(self, "PROGRESS", {"progress": 10, "message": "Rendering pages for comparison…"})
+    out = compare_pdfs(session_id, path_a, path_b)
+    return {"output_path": out, "progress": 100}
+
+
+# ─── PDF → PowerPoint ─────────────────────────────────────────────────────────
+
+@celery_app.task(bind=True, name="tasks.pdf_to_ppt")
+def process_pdf_to_ppt_job(self, job_id: str, session_id: str, file_path: str):
+    from .converter import pdf_to_ppt
+    _update(self, "PROGRESS", {"progress": 10, "message": "Rendering PDF pages as slides…"})
+    out = pdf_to_ppt(session_id, file_path)
+    return {"output_path": out, "progress": 100}

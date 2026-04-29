@@ -14,6 +14,7 @@ from .routers import (
     watermark, protect, unlock, ocr,
     convert, extract, repair, redact,
     sign, metadata, jobs,
+    number_pages, crop, compare, pdf_to_ppt,
 )
 
 
@@ -76,7 +77,11 @@ app.include_router(extract.router,   prefix=PREFIX)
 app.include_router(repair.router,    prefix=PREFIX)
 app.include_router(redact.router,    prefix=PREFIX)
 app.include_router(sign.router,      prefix=PREFIX)
-app.include_router(metadata.router,  prefix=PREFIX)
+app.include_router(metadata.router,    prefix=PREFIX)
+app.include_router(number_pages.router,prefix=PREFIX)
+app.include_router(crop.router,        prefix=PREFIX)
+app.include_router(compare.router,     prefix=PREFIX)
+app.include_router(pdf_to_ppt.router,  prefix=PREFIX)
 
 # Jobs router uses /api/v1 prefix (not /tools)
 app.include_router(jobs.router, prefix="/api/v1")

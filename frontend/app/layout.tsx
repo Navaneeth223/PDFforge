@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Playfair_Display } from "next/font/google";
 import { Toaster } from "sonner";
+import { Navbar } from "@/components/layout/Navbar";
 import "@/styles/globals.css";
 
 const geistSans = localFont({
@@ -62,6 +63,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} font-sans antialiased`}
       >
+        <Navbar />
         {children}
         <Toaster
           position="bottom-right"

@@ -122,7 +122,7 @@ def pdf_to_excel(session_id: str, input_path: str) -> str:
 
 # ─── PDF → PowerPoint (python-pptx) ───────────────────────────────────────────
 
-def pdf_to_pptx(session_id: str, input_path: str) -> str:
+def pdf_to_ppt(session_id: str, input_path: str) -> str:
     import fitz
     from pptx import Presentation
     from pptx.util import Inches

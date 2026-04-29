@@ -3,52 +3,62 @@ version: '3.8'
 services:
   frontend:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile.frontend
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=http://localhost
       - NEXT_PUBLIC_MAX_FILE_SIZE_MB=100
     depends_on:
       - backend
+    restart: unless-stopped
 
   backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile.backend
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     environment:
       - MAX_FILE_SIZE_MB=100
       - FILE_RETENTION_MINUTES=60
       - REDIS_URL=redis://redis:6379/0
-      - ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
+      - SECRET_KEY=${SECRET_KEY:-changeme-in-production}
+      - ALLOWED_ORIGINS=http://localhost
     volumes:
-      - /tmp/pdfforge:/tmp/pdfforge
+      - pdfforge_tmp:/tmp/pdfforge
     depends_on:
       - redis
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
+    restart: unless-stopped
 
   worker:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile.backend
-    command: celery -A main.celery_app worker --loglevel=info
+    command: >
+      celery -A services.job_queue.celery_app worker
+      --loglevel=info
+      --concurrency=2
     environment:
       - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=${SECRET_KEY:-changeme-in-production}
     volumes:
-      - /tmp/pdfforge:/tmp/pdfforge
+      - pdfforge_tmp:/tmp/pdfforge
     depends_on:
       - redis
-      - backend
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
 
   nginx:
-    image: nginx:alpine
+    image: nginx:1.25-alpine
     ports:
       - "80:80"
     volumes:
@@ -56,3 +66,8 @@ services:
     depends_on:
       - frontend
       - backend
+    restart: unless-stopped
+
+volumes:
+  pdfforge_tmp:
+  redis_data:

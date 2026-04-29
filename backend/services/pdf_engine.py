@@ -436,3 +436,145 @@ def images_to_pdf(session_id: str, image_paths: List[str],
     doc.save(out_path, garbage=4, deflate=True)
     doc.close()
     return out_path
+
+
+# ─── Add Page Numbers ──────────────────────────────────────────────────────────
+
+def add_page_numbers(session_id: str, input_path: str,
+                     h_align: str, v_align: str, start_number: int,
+                     font_size: int, prefix: str, suffix: str) -> str:
+    """Stamp page numbers onto every page of the PDF."""
+    doc = fitz.open(input_path)
+    for i, page in enumerate(doc):
+        pw = page.rect.width
+        ph = page.rect.height
+        label = f"{prefix}{start_number + i}{suffix}"
+
+        # Horizontal x anchor
+        if h_align == "left":
+            x = 36.0
+        elif h_align == "right":
+            x = pw - 36.0
+        else:
+            x = pw / 2
+
+        # Vertical y position
+        y = 30.0 if v_align == "header" else ph - 20.0
+
+        tw = fitz.TextWriter(page.rect)
+        font = fitz.Font(fontname="helv")
+        # Estimate text width to centre properly
+        text_len = len(label) * font_size * 0.5
+        if h_align == "center":
+            x -= text_len / 2
+        elif h_align == "right":
+            x -= text_len
+
+        tw.append((x, y), label, font=font, fontsize=font_size)
+        tw.write_text(page)
+
+    out_path = get_output_path(session_id, ".pdf")
+    doc.save(out_path, garbage=4, deflate=True)
+    doc.close()
+    return out_path
+
+
+# ─── Crop PDF ─────────────────────────────────────────────────────────────────
+
+def crop_pdf(session_id: str, input_path: str,
+             top: float, right: float, bottom: float, left: float,
+             pages: str) -> str:
+    """Crop pages by adjusting the MediaBox / CropBox."""
+    doc = fitz.open(input_path)
+    total = len(doc)
+
+    if pages.strip().lower() == "all":
+        page_indices = list(range(total))
+    else:
+        page_indices = []
+        for part in pages.split(","):
+            part = part.strip()
+            if "-" in part:
+                s, e = part.split("-", 1)
+                page_indices.extend(range(int(s) - 1, min(int(e), total)))
+            else:
+                idx = int(part) - 1
+                if 0 <= idx < total:
+                    page_indices.append(idx)
+
+    for idx in page_indices:
+        page = doc[idx]
+        r = page.rect
+        new_rect = fitz.Rect(
+            r.x0 + left,
+            r.y0 + top,
+            r.x1 - right,
+            r.y1 - bottom,
+        )
+        page.set_cropbox(new_rect)
+
+    out_path = get_output_path(session_id, ".pdf")
+    doc.save(out_path, garbage=4, deflate=True)
+    doc.close()
+    return out_path
+
+
+# ─── Compare PDFs ─────────────────────────────────────────────────────────────
+
+def compare_pdfs(session_id: str, path_a: str, path_b: str) -> str:
+    """Render pages of both PDFs to pixmaps and produce a diff ZIP.
+
+    For each page pair, pixel-diff is computed via Pillow; changed regions
+    are highlighted in red on the B image.  All diff images are bundled into
+    a ZIP so the user can browse them.
+    """
+    doc_a = fitz.open(path_a)
+    doc_b = fitz.open(path_b)
+    total = max(len(doc_a), len(doc_b))
+
+    zip_path = get_output_path(session_id, ".zip")
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+        for i in range(total):
+            mat = fitz.Matrix(1.5, 1.5)  # 108 DPI — good balance
+
+            if i < len(doc_a):
+                pix_a = doc_a[i].get_pixmap(matrix=mat, alpha=False)
+                img_a = Image.frombytes("RGB", (pix_a.width, pix_a.height), pix_a.samples)
+            else:
+                # Pad with blank page the same size as first page of B
+                pix_b0 = doc_b[0].get_pixmap(matrix=mat, alpha=False)
+                img_a = Image.new("RGB", (pix_b0.width, pix_b0.height), "white")
+
+            if i < len(doc_b):
+                pix_b = doc_b[i].get_pixmap(matrix=mat, alpha=False)
+                img_b = Image.frombytes("RGB", (pix_b.width, pix_b.height), pix_b.samples)
+            else:
+                img_b = Image.new("RGB", img_a.size, "white")
+
+            # Resize to same dimensions
+            w = max(img_a.width, img_b.width)
+            h = max(img_a.height, img_b.height)
+            img_a = img_a.resize((w, h), Image.LANCZOS)
+            img_b = img_b.resize((w, h), Image.LANCZOS)
+
+            import numpy as np
+            arr_a = np.array(img_a, dtype=np.int16)
+            arr_b = np.array(img_b, dtype=np.int16)
+            diff = np.abs(arr_a - arr_b).sum(axis=2)  # per-pixel channel sum
+
+            # Overlay red pixels where diff > threshold
+            THRESHOLD = 30
+            result = img_b.copy()
+            result_arr = np.array(result)
+            mask = diff > THRESHOLD
+            result_arr[mask] = [220, 40, 40]
+            out_img = Image.fromarray(result_arr.astype(np.uint8))
+
+            buf = io.BytesIO()
+            out_img.save(buf, format="PNG")
+            zf.writestr(f"diff_page_{i + 1}.png", buf.getvalue())
+
+    doc_a.close()
+    doc_b.close()
+    return zip_path
+
