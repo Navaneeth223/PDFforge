@@ -22,6 +22,17 @@ export function SettingsPanel({ title, children, defaultOpen = true }: SettingsP
     }
   }, []);
 
+  useEffect(() => {
+    if (isOpen && window.innerWidth < 768) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   return (
     <>
       {/* Mobile Trigger */}

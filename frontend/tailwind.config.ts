@@ -16,9 +16,9 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "system-ui", "sans-serif"],
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
         display: ["var(--font-playfair)", "serif"],
-        mono: ["var(--font-geist-mono)", "monospace"],
+        mono: ["var(--font-roboto-mono)", "monospace"],
       },
       colors: {
         background: "hsl(var(--background))",

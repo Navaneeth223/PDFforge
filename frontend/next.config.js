@@ -4,8 +4,9 @@ const nextConfig = {
   images: {
     remotePatterns: [{ protocol: "http", hostname: "localhost" }],
   },
-  experimental: {
-    serverComponentsExternalPackages: [],
+  webpack: (config) => {
+    config.resolve.alias.canvas = false;
+    return config;
   },
 };
 

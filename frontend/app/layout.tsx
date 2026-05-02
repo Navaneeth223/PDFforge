@@ -1,20 +1,17 @@
 import type { Metadata } from "next";
-import localFont from "next/font/local";
-import { Playfair_Display } from "next/font/google";
+import { Inter, Roboto_Mono, Playfair_Display } from "next/font/google";
 import { Toaster } from "sonner";
 import { Navbar } from "@/components/layout/Navbar";
 import "@/styles/globals.css";
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
 });
 
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  variable: "--font-roboto-mono",
 });
 
 const playfair = Playfair_Display({
@@ -22,6 +19,10 @@ const playfair = Playfair_Display({
   variable: "--font-playfair",
   weight: ["400", "700", "900"],
 });
+
+export const viewport = {
+  themeColor: "#09090f",
+};
 
 export const metadata: Metadata = {
   title: {
@@ -50,7 +51,6 @@ export const metadata: Metadata = {
     description: "25+ free PDF tools. No registration. No watermarks. Open source.",
   },
   robots: { index: true, follow: true },
-  themeColor: "#09090f",
 };
 
 export default function RootLayout({
@@ -61,7 +61,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} font-sans antialiased`}
+        className={`${inter.variable} ${robotoMono.variable} ${playfair.variable} font-sans antialiased overflow-x-hidden`}
       >
         <Navbar />
         {children}
