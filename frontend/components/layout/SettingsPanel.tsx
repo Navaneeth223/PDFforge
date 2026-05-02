@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Settings2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SettingsPanelProps {
   title: string;
