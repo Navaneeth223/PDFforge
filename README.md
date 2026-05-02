@@ -2,7 +2,7 @@
 
 PDFForge is a powerful, self-hostable, and completely free open-source PDF toolkit. Forget vendor lock-in, uploading sensitive documents to third-party servers, and expensive subscriptions. PDFForge brings 25+ PDF manipulation tools directly to your infrastructure.
 
-![PDFForge Banner](./public/banner.png)
+![PDFForge Banner](https://capsule-render.vercel.app/api?type=waving&color=0:0f2027,50:203a43,100:2c5364&height=200&section=header&text=PDFForge&fontSize=50&fontColor=ffffff&animation=fadeIn)
 
 ## Features
 
