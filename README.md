@@ -20,25 +20,39 @@ PDFForge is a powerful, self-hostable, and completely free open-source PDF toolk
 - **Backend:** FastAPI, Python 3.11, PyMuPDF, Celery
 - **Infrastructure:** Docker, Docker Compose, Redis, Nginx
 
-## Quick Start (Docker)
+## Deployment
 
-The fastest way to run PDFForge is using Docker Compose. This will automatically spin up the frontend, backend, Redis broker, Celery worker, and Nginx proxy.
+PDFForge can be deployed in two primary ways:
 
+### 1. Offline / Local (Self-Hosted via Docker)
+This is the recommended way for maximum privacy.
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/PDFforge.git
-cd PDFforge
+# Clone and enter repo
+git clone https://github.com/yourusername/PDFforge.git && cd PDFforge
 
-# Copy the environment file
-cp .env.example .env
-
-# Build and start all containers
+# Start everything
 docker-compose up -d --build
 ```
+Access at `http://localhost`.
 
-Access the application at: `http://localhost:3000`
+### 2. Online / Cloud (Vercel + Render)
+For hosting on the web with a live URL:
 
-## Manual Development Setup
+#### **Backend (Render)**
+1. Fork this repository.
+2. Connect your GitHub to [Render](https://render.com).
+3. Click **New +** > **Blueprint**.
+4. Select the `render.yaml` file from your repo.
+5. Set `ALLOWED_ORIGINS` to your future Vercel URL.
+6. Render will automatically deploy the API, Celery Worker, and Redis.
+
+#### **Frontend (Vercel)**
+1. Connect your GitHub to [Vercel](https://vercel.com).
+2. Select the `frontend` directory.
+3. Set Environment Variable: `NEXT_PUBLIC_API_URL` to your Render API URL.
+4. Deploy.
+
+## manual Development Setup
 
 If you wish to run the services manually without Docker:
 

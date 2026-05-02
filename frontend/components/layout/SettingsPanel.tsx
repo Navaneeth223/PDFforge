@@ -12,6 +12,15 @@ interface SettingsPanelProps {
 
 export function SettingsPanel({ title, children, defaultOpen = true }: SettingsPanelProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // On mobile, default to closed even if defaultOpen is true
+    if (window.innerWidth < 768) {
+      setIsOpen(false);
+    }
+  }, []);
 
   return (
     <>
@@ -40,7 +49,7 @@ export function SettingsPanel({ title, children, defaultOpen = true }: SettingsP
 
       {/* Panel */}
       <AnimatePresence>
-        {(isOpen || typeof window === "undefined" || window.innerWidth >= 768) && (
+        {mounted && (isOpen || (typeof window !== "undefined" && window.innerWidth >= 768)) && (
           <motion.div
             initial={{ x: "100%" }}
             animate={{ x: 0 }}

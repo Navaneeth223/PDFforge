@@ -1,0 +1,41 @@
+services:
+  # ─── FastAPI Application ───────────────────────────────────────────────────
+  - type: web
+    name: pdfforge-api
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: pdfforge-redis
+          property: connectionString
+      - key: ALLOWED_ORIGINS
+        value: https://pdfforge-frontend.vercel.app  # Replace with your Vercel URL
+      - key: SECRET_KEY
+        generateValue: true
+
+  # ─── Celery Worker ──────────────────────────────────────────────────────────
+  - type: worker
+    name: pdfforge-worker
+    env: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: cd backend && celery -A services.job_queue.celery_app worker --loglevel=info
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: pdfforge-redis
+          property: connectionString
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: pdfforge-api
+          property: secret_key
+
+  # ─── Redis ──────────────────────────────────────────────────────────────────
+  - type: redis
+    name: pdfforge-redis
+    ipAllowList: [] # Only allow internal connections
+    plan: free # Note: Check Render's latest pricing for free Redis availability
