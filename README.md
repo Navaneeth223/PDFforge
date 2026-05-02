@@ -28,7 +28,7 @@ PDFForge can be deployed in two primary ways:
 This is the recommended way for maximum privacy.
 ```bash
 # Clone and enter repo
-git clone https://github.com/yourusername/PDFforge.git && cd PDFforge
+git clone https://github.com/Navaneeth223/PDFforge.git && cd PDFforge
 
 # Start everything
 docker-compose up -d --build
