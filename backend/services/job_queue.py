@@ -3,6 +3,7 @@ job_queue.py — Celery task definitions for all PDF operations.
 All tasks call synchronous engine/converter functions via asyncio.to_thread()
 or directly (Celery workers run in separate processes, blocking is acceptable).
 """
+import os
 import asyncio
 from typing import List, Optional, Dict, Any
 from celery import Celery
@@ -16,10 +17,11 @@ celery_app = Celery(
 )
 
 celery_app.conf.update(
+    task_always_eager=os.getenv("CELERY_TASK_ALWAYS_EAGER", "false").lower() == "true",
     task_serializer="json",
     result_serializer="json",
     accept_content=["json"],
-    result_expires=3600,  # results expire after 1 hour
+    result_expires=3600,
     worker_prefetch_multiplier=1,
     task_acks_late=True,
 )
