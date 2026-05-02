@@ -1,3 +1,9 @@
+envVarGroups:
+  - name: pdfforge-shared
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+
 services:
   # ─── FastAPI Application ───────────────────────────────────────────────────
   - type: web
@@ -7,6 +13,7 @@ services:
     dockerfilePath: Dockerfile.backend
     plan: free
     envVars:
+      - fromGroup: pdfforge-shared
       - key: REDIS_URL
         fromService:
           type: redis
@@ -14,8 +21,6 @@ services:
           property: connectionString
       - key: ALLOWED_ORIGINS
         value: https://pd-fforge.vercel.app/  # Replace with your Vercel URL
-      - key: SECRET_KEY
-        generateValue: true
 
   # ─── Celery Worker ──────────────────────────────────────────────────────────
   - type: worker
@@ -26,16 +31,12 @@ services:
     dockerCommand: celery -A services.job_queue.celery_app worker --loglevel=info
     plan: free
     envVars:
+      - fromGroup: pdfforge-shared
       - key: REDIS_URL
         fromService:
           type: redis
           name: pdfforge-redis
           property: connectionString
-      - key: SECRET_KEY
-        fromService:
-          type: web
-          name: pdfforge-api
-          property: secret_key
 
   # ─── Redis ──────────────────────────────────────────────────────────────────
   - type: redis
