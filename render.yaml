@@ -28,7 +28,7 @@ services:
     env: docker
     dockerContext: ./backend
     dockerfilePath: Dockerfile.backend
-    dockerCommand: celery -A services.job_queue.celery_app worker --loglevel=info
+    dockerCommand: celery -A services.job_queue.celery_app worker --loglevel=info --concurrency=2
     plan: free
     envVars:
       - fromGroup: pdfforge-shared

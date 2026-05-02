@@ -12,6 +12,7 @@ celery_app = Celery(
     "pdfforge_worker",
     broker=settings.redis_url,
     backend=settings.redis_url,
+    include=["services.job_queue"]
 )
 
 celery_app.conf.update(
