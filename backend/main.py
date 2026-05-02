@@ -7,9 +7,9 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .config import settings
-from .utils.temp_manager import cleanup_loop
-from .routers import (
+from config import settings
+from utils.temp_manager import cleanup_loop
+from routers import (
     merge, split, compress, rotate,
     watermark, protect, unlock, ocr,
     convert, extract, repair, redact,

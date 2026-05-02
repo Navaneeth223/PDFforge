@@ -3,9 +3,9 @@ pdf_to_ppt.py — Convert PDF pages to PowerPoint slides (each page = one image 
 """
 from fastapi import APIRouter, File, UploadFile, HTTPException
 import uuid
-from ..models.schemas import JobResponse
-from ..services.storage import save_upload_file
-from ..services.job_queue import process_pdf_to_ppt_job
+from models.schemas import JobResponse
+from services.storage import save_upload_file
+from services.job_queue import process_pdf_to_ppt_job
 
 router = APIRouter(tags=["Convert"])
 

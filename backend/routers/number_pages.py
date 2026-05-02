@@ -3,9 +3,9 @@ number_pages.py — Add page numbers to every page of a PDF.
 """
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 import uuid
-from ..models.schemas import JobResponse
-from ..services.storage import save_upload_file
-from ..services.job_queue import process_number_pages_job
+from models.schemas import JobResponse
+from services.storage import save_upload_file
+from services.job_queue import process_number_pages_job
 
 router = APIRouter(tags=["Edit"])
 

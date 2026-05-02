@@ -1,10 +1,10 @@
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 from typing import Optional
 import uuid
-from ..models.schemas import JobResponse, GenericResponse
-from ..services.storage import save_upload_file
-from ..services.job_queue import process_metadata_job
-from ..services.pdf_engine import read_metadata
+from models.schemas import JobResponse, GenericResponse
+from services.storage import save_upload_file
+from services.job_queue import process_metadata_job
+from services.pdf_engine import read_metadata
 
 router = APIRouter(tags=["Metadata"])
 

@@ -1,8 +1,8 @@
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 import uuid
-from ..models.schemas import JobResponse
-from ..services.storage import save_upload_file
-from ..services.job_queue import process_compress_job
+from models.schemas import JobResponse
+from services.storage import save_upload_file
+from services.job_queue import process_compress_job
 
 router = APIRouter(tags=["Compress"])
 

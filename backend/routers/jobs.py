@@ -4,8 +4,8 @@ from typing import AsyncGenerator
 import asyncio
 import json
 import os
-from ..services.job_queue import get_job_status
-from ..services.storage import get_output_path
+from services.job_queue import get_job_status
+from services.storage import get_output_path
 
 router = APIRouter(tags=["Jobs"])
 

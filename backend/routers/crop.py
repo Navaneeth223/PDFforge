@@ -3,9 +3,9 @@ crop.py — Crop PDF page margins.
 """
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 import uuid
-from ..models.schemas import JobResponse
-from ..services.storage import save_upload_file
-from ..services.job_queue import process_crop_job
+from models.schemas import JobResponse
+from services.storage import save_upload_file
+from services.job_queue import process_crop_job
 
 router = APIRouter(tags=["Edit"])
 

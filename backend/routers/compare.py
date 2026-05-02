@@ -3,9 +3,9 @@ compare.py — Visual diff between two PDFs (renders changed pages as highlighte
 """
 from fastapi import APIRouter, File, UploadFile, HTTPException
 import uuid
-from ..models.schemas import JobResponse
-from ..services.storage import save_upload_file
-from ..services.job_queue import process_compare_job
+from models.schemas import JobResponse
+from services.storage import save_upload_file
+from services.job_queue import process_compare_job
 
 router = APIRouter(tags=["Analyze"])
 

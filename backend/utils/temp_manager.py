@@ -6,7 +6,7 @@ import os
 import shutil
 import asyncio
 import time
-from ..config import settings
+from config import settings
 
 BASE_DIR = "/tmp/pdfforge"
 

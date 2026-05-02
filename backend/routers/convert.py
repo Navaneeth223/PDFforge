@@ -1,9 +1,9 @@
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 from typing import Optional, List
 import uuid
-from ..models.schemas import JobResponse
-from ..services.storage import save_upload_file
-from ..services.job_queue import (
+from models.schemas import JobResponse
+from services.storage import save_upload_file
+from services.job_queue import (
     process_pdf_to_images_job,
     process_pdf_to_word_job,
     process_pdf_to_excel_job,

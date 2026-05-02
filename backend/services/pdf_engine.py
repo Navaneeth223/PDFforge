@@ -10,7 +10,7 @@ from typing import List, Optional, Dict, Any
 import fitz  # PyMuPDF
 from PIL import Image
 import numpy as np
-from .storage import get_output_path, get_session_dir
+from storage import get_output_path, get_session_dir
 
 
 # ─── Merge ────────────────────────────────────────────────────────────────────

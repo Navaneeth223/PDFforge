@@ -10,7 +10,7 @@ import os
 import uuid
 import aiofiles
 from fastapi import UploadFile
-from ..config import settings
+from config import settings
 
 BASE_DIR = "/tmp/pdfforge"
 

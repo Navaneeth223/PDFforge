@@ -1,8 +1,8 @@
 from fastapi import APIRouter, File, UploadFile, HTTPException
 import uuid
-from ..models.schemas import JobResponse
-from ..services.storage import save_upload_file
-from ..services.job_queue import process_repair_job
+from models.schemas import JobResponse
+from services.storage import save_upload_file
+from services.job_queue import process_repair_job
 
 router = APIRouter(tags=["Repair"])
 
