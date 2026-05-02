@@ -48,7 +48,7 @@ def get_job_status(job_id: str) -> Dict[str, Any]:
 
 @celery_app.task(bind=True, name="tasks.merge")
 def process_merge_job(self, job_id: str, session_id: str, file_paths: List[str]):
-    from pdf_engine import merge_pdfs
+    from services.pdf_engine import merge_pdfs
     _update(self, "PROGRESS", {"progress": 10, "message": "Merging PDFs…"})
     out = merge_pdfs(session_id, file_paths)
     return {"output_path": out, "progress": 100}
@@ -60,7 +60,7 @@ def process_merge_job(self, job_id: str, session_id: str, file_paths: List[str])
 def process_split_job(self, job_id: str, session_id: str, file_path: str,
                       mode: str, ranges: Optional[str], every_n: Optional[int],
                       pages: Optional[str]):
-    from pdf_engine import split_pdf
+    from services.pdf_engine import split_pdf
     _update(self, "PROGRESS", {"progress": 10, "message": "Splitting PDF…"})
     out = split_pdf(session_id, file_path, mode, ranges, every_n, pages)
     return {"output_path": out, "progress": 100}
@@ -71,7 +71,7 @@ def process_split_job(self, job_id: str, session_id: str, file_path: str,
 @celery_app.task(bind=True, name="tasks.compress")
 def process_compress_job(self, job_id: str, session_id: str,
                           file_path: str, level: str):
-    from pdf_engine import compress_pdf
+    from services.pdf_engine import compress_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": f"Compressing ({level} mode)…"})
     result = compress_pdf(session_id, file_path, level)
     return {**result, "progress": 100}
@@ -82,7 +82,7 @@ def process_compress_job(self, job_id: str, session_id: str,
 @celery_app.task(bind=True, name="tasks.rotate")
 def process_rotate_job(self, job_id: str, session_id: str,
                         file_path: str, angle: int, pages: str):
-    from pdf_engine import rotate_pdf
+    from services.pdf_engine import rotate_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": f"Rotating pages by {angle}°…"})
     out = rotate_pdf(session_id, file_path, angle, pages)
     return {"output_path": out, "progress": 100}
@@ -93,7 +93,7 @@ def process_rotate_job(self, job_id: str, session_id: str,
 @celery_app.task(bind=True, name="tasks.extract_pages")
 def process_extract_pages_job(self, job_id: str, session_id: str,
                                file_path: str, pages: str):
-    from pdf_engine import extract_pages
+    from services.pdf_engine import extract_pages
     _update(self, "PROGRESS", {"progress": 20, "message": "Extracting pages…"})
     out = extract_pages(session_id, file_path, pages)
     return {"output_path": out, "progress": 100}
@@ -103,7 +103,7 @@ def process_extract_pages_job(self, job_id: str, session_id: str,
 
 @celery_app.task(bind=True, name="tasks.extract_images")
 def process_extract_images_job(self, job_id: str, session_id: str, file_path: str):
-    from pdf_engine import extract_images
+    from services.pdf_engine import extract_images
     _update(self, "PROGRESS", {"progress": 20, "message": "Extracting embedded images…"})
     out = extract_images(session_id, file_path)
     return {"output_path": out, "progress": 100}
@@ -116,7 +116,7 @@ def process_watermark_job(self, job_id: str, session_id: str, file_path: str,
                            watermark_type: str, text: Optional[str],
                            wm_image_path: Optional[str], opacity: float,
                            angle: float, position: str, font_size: int, color: str):
-    from pdf_engine import add_watermark
+    from services.pdf_engine import add_watermark
     _update(self, "PROGRESS", {"progress": 20, "message": "Applying watermark…"})
     out = add_watermark(session_id, file_path, watermark_type, text,
                         wm_image_path, opacity, angle, position, font_size, color)
@@ -130,7 +130,7 @@ def process_protect_job(self, job_id: str, session_id: str, file_path: str,
                          user_password: str, owner_password: str,
                          allow_print: bool, allow_copy: bool,
                          allow_edit: bool, allow_annotate: bool):
-    from pdf_engine import protect_pdf
+    from services.pdf_engine import protect_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": "Encrypting PDF…"})
     out = protect_pdf(session_id, file_path, user_password, owner_password,
                       allow_print, allow_copy, allow_edit, allow_annotate)
@@ -142,7 +142,7 @@ def process_protect_job(self, job_id: str, session_id: str, file_path: str,
 @celery_app.task(bind=True, name="tasks.unlock")
 def process_unlock_job(self, job_id: str, session_id: str,
                         file_path: str, password: str):
-    from pdf_engine import unlock_pdf
+    from services.pdf_engine import unlock_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": "Removing password…"})
     out = unlock_pdf(session_id, file_path, password)
     return {"output_path": out, "progress": 100}
@@ -153,7 +153,7 @@ def process_unlock_job(self, job_id: str, session_id: str,
 @celery_app.task(bind=True, name="tasks.ocr")
 def process_ocr_job(self, job_id: str, session_id: str,
                      file_path: str, language: str, dpi: int):
-    from converter import ocr_pdf
+    from services.converter import ocr_pdf
     _update(self, "PROGRESS", {"progress": 10, "message": "Rendering pages for OCR…"})
     out = ocr_pdf(session_id, file_path, language, dpi)
     return {"output_path": out, "progress": 100}
@@ -164,7 +164,7 @@ def process_ocr_job(self, job_id: str, session_id: str,
 @celery_app.task(bind=True, name="tasks.pdf_to_images")
 def process_pdf_to_images_job(self, job_id: str, session_id: str,
                                 file_path: str, dpi: int, fmt: str):
-    from pdf_engine import pdf_to_images
+    from services.pdf_engine import pdf_to_images
     _update(self, "PROGRESS", {"progress": 10, "message": "Converting pages to images…"})
     out = pdf_to_images(session_id, file_path, dpi, fmt)
     return {"output_path": out, "progress": 100}
@@ -174,7 +174,7 @@ def process_pdf_to_images_job(self, job_id: str, session_id: str,
 
 @celery_app.task(bind=True, name="tasks.pdf_to_word")
 def process_pdf_to_word_job(self, job_id: str, session_id: str, file_path: str):
-    from converter import pdf_to_word
+    from services.converter import pdf_to_word
     _update(self, "PROGRESS", {"progress": 20, "message": "Extracting text to Word…"})
     out = pdf_to_word(session_id, file_path)
     return {"output_path": out, "progress": 100}
@@ -184,7 +184,7 @@ def process_pdf_to_word_job(self, job_id: str, session_id: str, file_path: str):
 
 @celery_app.task(bind=True, name="tasks.pdf_to_excel")
 def process_pdf_to_excel_job(self, job_id: str, session_id: str, file_path: str):
-    from converter import pdf_to_excel
+    from services.converter import pdf_to_excel
     _update(self, "PROGRESS", {"progress": 20, "message": "Detecting tables and exporting…"})
     out = pdf_to_excel(session_id, file_path)
     return {"output_path": out, "progress": 100}
@@ -194,7 +194,7 @@ def process_pdf_to_excel_job(self, job_id: str, session_id: str, file_path: str)
 
 @celery_app.task(bind=True, name="tasks.pdf_to_text")
 def process_pdf_to_text_job(self, job_id: str, session_id: str, file_path: str):
-    from pdf_engine import pdf_to_text
+    from services.pdf_engine import pdf_to_text
     _update(self, "PROGRESS", {"progress": 20, "message": "Extracting text…"})
     out = pdf_to_text(session_id, file_path)
     return {"output_path": out, "progress": 100}
@@ -204,7 +204,7 @@ def process_pdf_to_text_job(self, job_id: str, session_id: str, file_path: str):
 
 @celery_app.task(bind=True, name="tasks.office_to_pdf")
 def process_office_to_pdf_job(self, job_id: str, session_id: str, file_path: str):
-    from converter import office_to_pdf
+    from services.converter import office_to_pdf
     _update(self, "PROGRESS", {"progress": 10, "message": "Launching LibreOffice…"})
     # office_to_pdf is async — run it in an event loop
     loop = asyncio.new_event_loop()
@@ -218,7 +218,7 @@ def process_office_to_pdf_job(self, job_id: str, session_id: str, file_path: str
 @celery_app.task(bind=True, name="tasks.images_to_pdf")
 def process_images_to_pdf_job(self, job_id: str, session_id: str,
                                 file_paths: List[str], layout: str, page_size: str):
-    from pdf_engine import images_to_pdf
+    from services.pdf_engine import images_to_pdf
     _update(self, "PROGRESS", {"progress": 10, "message": "Building PDF from images…"})
     out = images_to_pdf(session_id, file_paths, layout, page_size)
     return {"output_path": out, "progress": 100}
@@ -229,7 +229,7 @@ def process_images_to_pdf_job(self, job_id: str, session_id: str,
 @celery_app.task(bind=True, name="tasks.html_to_pdf")
 def process_html_to_pdf_job(self, job_id: str, session_id: str,
                               html_content: Optional[str], url: Optional[str]):
-    from converter import html_to_pdf
+    from services.converter import html_to_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": "Rendering HTML to PDF…"})
     out = html_to_pdf(session_id, html_content, url)
     return {"output_path": out, "progress": 100}
@@ -239,7 +239,7 @@ def process_html_to_pdf_job(self, job_id: str, session_id: str,
 
 @celery_app.task(bind=True, name="tasks.repair")
 def process_repair_job(self, job_id: str, session_id: str, file_path: str):
-    from pdf_engine import repair_pdf
+    from services.pdf_engine import repair_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": "Repairing PDF structure…"})
     out = repair_pdf(session_id, file_path)
     return {"output_path": out, "progress": 100}
@@ -250,7 +250,7 @@ def process_repair_job(self, job_id: str, session_id: str, file_path: str):
 @celery_app.task(bind=True, name="tasks.redact")
 def process_redact_job(self, job_id: str, session_id: str, file_path: str,
                         search_terms: List[str], case_sensitive: bool):
-    from pdf_engine import redact_pdf
+    from services.pdf_engine import redact_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": "Applying redactions…"})
     out = redact_pdf(session_id, file_path, search_terms, case_sensitive)
     return {"output_path": out, "progress": 100}
@@ -263,7 +263,7 @@ def process_sign_job(self, job_id: str, session_id: str, file_path: str,
                       sign_type: str, sig_path: Optional[str],
                       typed_text: Optional[str], page_number: int,
                       x: float, y: float, width: float, height: float):
-    from pdf_engine import sign_pdf
+    from services.pdf_engine import sign_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": "Placing signature…"})
     out = sign_pdf(session_id, file_path, sign_type, sig_path,
                    typed_text, page_number, x, y, width, height)
@@ -277,7 +277,7 @@ def process_metadata_job(self, job_id: str, session_id: str, file_path: str,
                           title: Optional[str], author: Optional[str],
                           subject: Optional[str], keywords: Optional[str],
                           creator: Optional[str]):
-    from pdf_engine import write_metadata
+    from services.pdf_engine import write_metadata
     _update(self, "PROGRESS", {"progress": 20, "message": "Writing metadata…"})
     out = write_metadata(session_id, file_path, title, author, subject, keywords, creator)
     return {"output_path": out, "progress": 100}
@@ -289,7 +289,7 @@ def process_metadata_job(self, job_id: str, session_id: str, file_path: str,
 def process_number_pages_job(self, job_id: str, session_id: str, file_path: str,
                               h_align: str, v_align: str, start_number: int,
                               font_size: int, prefix: str, suffix: str):
-    from pdf_engine import add_page_numbers
+    from services.pdf_engine import add_page_numbers
     _update(self, "PROGRESS", {"progress": 20, "message": "Stamping page numbers…"})
     out = add_page_numbers(session_id, file_path, h_align, v_align,
                            start_number, font_size, prefix, suffix)
@@ -302,7 +302,7 @@ def process_number_pages_job(self, job_id: str, session_id: str, file_path: str,
 def process_crop_job(self, job_id: str, session_id: str, file_path: str,
                      top: float, right: float, bottom: float, left: float,
                      pages: str):
-    from pdf_engine import crop_pdf
+    from services.pdf_engine import crop_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": "Cropping pages…"})
     out = crop_pdf(session_id, file_path, top, right, bottom, left, pages)
     return {"output_path": out, "progress": 100}
@@ -313,7 +313,7 @@ def process_crop_job(self, job_id: str, session_id: str, file_path: str,
 @celery_app.task(bind=True, name="tasks.compare")
 def process_compare_job(self, job_id: str, session_id: str,
                          path_a: str, path_b: str):
-    from pdf_engine import compare_pdfs
+    from services.pdf_engine import compare_pdfs
     _update(self, "PROGRESS", {"progress": 10, "message": "Rendering pages for comparison…"})
     out = compare_pdfs(session_id, path_a, path_b)
     return {"output_path": out, "progress": 100}
@@ -323,7 +323,7 @@ def process_compare_job(self, job_id: str, session_id: str,
 
 @celery_app.task(bind=True, name="tasks.pdf_to_ppt")
 def process_pdf_to_ppt_job(self, job_id: str, session_id: str, file_path: str):
-    from converter import pdf_to_ppt
+    from services.converter import pdf_to_ppt
     _update(self, "PROGRESS", {"progress": 10, "message": "Rendering PDF pages as slides…"})
     out = pdf_to_ppt(session_id, file_path)
     return {"output_path": out, "progress": 100}
