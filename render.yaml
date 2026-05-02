@@ -20,7 +20,7 @@ services:
           name: pdfforge-redis
           property: connectionString
       - key: ALLOWED_ORIGINS
-        value: https://pd-fforge.vercel.app/  # Replace with your Vercel URL
+        value: https://pd-fforge.vercel.app,https://pdfforge-frontend.vercel.app
 
   # ─── Celery Worker ──────────────────────────────────────────────────────────
   - type: worker
