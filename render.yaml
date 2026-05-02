@@ -2,9 +2,10 @@ services:
   # ─── FastAPI Application ───────────────────────────────────────────────────
   - type: web
     name: pdfforge-api
-    env: python
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    env: docker
+    dockerContext: ./backend
+    dockerFilePath: Dockerfile.backend
+    plan: free
     envVars:
       - key: REDIS_URL
         fromService:
@@ -19,9 +20,11 @@ services:
   # ─── Celery Worker ──────────────────────────────────────────────────────────
   - type: worker
     name: pdfforge-worker
-    env: python
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: cd backend && celery -A services.job_queue.celery_app worker --loglevel=info
+    env: docker
+    dockerContext: ./backend
+    dockerFilePath: Dockerfile.backend
+    dockerCommand: celery -A services.job_queue.celery_app worker --loglevel=info
+    plan: free
     envVars:
       - key: REDIS_URL
         fromService:
@@ -38,4 +41,4 @@ services:
   - type: redis
     name: pdfforge-redis
     ipAllowList: [] # Only allow internal connections
-    plan: free # Note: Check Render's latest pricing for free Redis availability
+    plan: free

@@ -7,7 +7,7 @@ import { SettingsPanel } from "@/components/layout/SettingsPanel";
 import { Toolbar } from "@/components/toolbar/Toolbar";
 import { motion } from "framer-motion";
 import { Hash } from "lucide-react";
-import axios from "axios";
+import { apiUpload } from "@/lib/api";
 import { toast } from "sonner";
 
 type HAlign = "left" | "center" | "right";
@@ -39,11 +39,7 @@ export default function NumberPagesToolPage() {
       formData.append("prefix", prefix);
       formData.append("suffix", suffix);
 
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/tools/number-pages`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const res = await apiUpload.post("/tools/number-pages", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to add page numbers.");

@@ -7,7 +7,7 @@ import { Toolbar } from "@/components/toolbar/Toolbar";
 import { PDFViewer } from "@/components/pdf-viewer/PDFViewer";
 import { motion } from "framer-motion";
 import { GitCompare } from "lucide-react";
-import axios from "axios";
+import { apiUpload } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function CompareToolPage() {
@@ -25,11 +25,7 @@ export default function CompareToolPage() {
       formData.append("file_a", fileA);
       formData.append("file_b", fileB);
 
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/tools/compare`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const res = await apiUpload.post("/tools/compare", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start comparison.");

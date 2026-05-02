@@ -5,7 +5,7 @@ import { UniversalDropzone } from "@/components/dropzone/UniversalDropzone";
 import { JobProgress } from "@/components/progress/JobProgress";
 import { motion } from "framer-motion";
 import { Lock } from "lucide-react";
-import axios from "axios";
+import { apiUpload } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function ProtectToolPage() {
@@ -39,11 +39,7 @@ export default function ProtectToolPage() {
       formData.append("allow_edit", allowEdit.toString());
       formData.append("allow_annotate", allowAnnotate.toString());
 
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/tools/protect`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const res = await apiUpload.post("/tools/protect", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to protect PDF.");

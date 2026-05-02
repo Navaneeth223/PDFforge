@@ -7,7 +7,7 @@ import { SettingsPanel } from "@/components/layout/SettingsPanel";
 import { Toolbar } from "@/components/toolbar/Toolbar";
 import { motion } from "framer-motion";
 import { ScanText } from "lucide-react";
-import axios from "axios";
+import { apiUpload } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function OCRToolPage() {
@@ -26,11 +26,7 @@ export default function OCRToolPage() {
       formData.append("file", file);
       formData.append("language", language);
 
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/tools/ocr`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const res = await apiUpload.post("/tools/ocr", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start OCR job.");

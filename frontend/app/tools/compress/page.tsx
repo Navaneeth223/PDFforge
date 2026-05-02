@@ -5,7 +5,7 @@ import { UniversalDropzone } from "@/components/dropzone/UniversalDropzone";
 import { JobProgress } from "@/components/progress/JobProgress";
 import { motion } from "framer-motion";
 import { Minimize2 } from "lucide-react";
-import axios from "axios";
+import { apiUpload } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function CompressToolPage() {
@@ -24,11 +24,7 @@ export default function CompressToolPage() {
       formData.append("file", files[0]);
       formData.append("level", level);
 
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/tools/compress`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const res = await apiUpload.post("/tools/compress", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start compression job.");

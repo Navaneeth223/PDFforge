@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Loader2, Download, AlertCircle, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { getBaseUrl } from "@/lib/api";
 
 interface JobStatus {
   state: "PENDING" | "PROGRESS" | "SUCCESS" | "FAILURE";
@@ -26,7 +27,7 @@ export function JobProgress({ jobId, onComplete, onReset }: JobProgressProps) {
 
   useEffect(() => {
     const eventSource = new EventSource(
-      `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/jobs/${jobId}/status`
+      `${getBaseUrl()}/api/v1/jobs/${jobId}/status`
     );
 
     eventSource.onmessage = (event) => {
@@ -61,7 +62,7 @@ export function JobProgress({ jobId, onComplete, onReset }: JobProgressProps) {
   }, [jobId, onComplete]);
 
   const handleDownload = () => {
-    const url = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/jobs/${jobId}/download`;
+    const url = `${getBaseUrl()}/api/v1/jobs/${jobId}/download`;
     // Create a temporary link to download the file
     const link = document.createElement("a");
     link.href = url;

@@ -8,7 +8,7 @@ import { Toolbar } from "@/components/toolbar/Toolbar";
 import { PDFPageThumbnails } from "@/components/pdf-viewer/PDFPageThumbnails";
 import { motion } from "framer-motion";
 import { CopyPlus } from "lucide-react";
-import axios from "axios";
+import { apiUpload } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function ExtractPagesToolPage() {
@@ -31,11 +31,7 @@ export default function ExtractPagesToolPage() {
       formData.append("file", file);
       formData.append("pages", selectedPages.sort((a,b) => a-b).join(","));
 
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/tools/extract-pages`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const res = await apiUpload.post("/tools/extract-pages", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start extraction job.");

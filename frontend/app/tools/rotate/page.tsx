@@ -8,7 +8,7 @@ import { Toolbar } from "@/components/toolbar/Toolbar";
 import { PDFPageThumbnails } from "@/components/pdf-viewer/PDFPageThumbnails";
 import { motion } from "framer-motion";
 import { RefreshCw, RotateCw, RotateCcw } from "lucide-react";
-import axios from "axios";
+import { apiUpload } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function RotateToolPage() {
@@ -36,11 +36,7 @@ export default function RotateToolPage() {
         formData.append("pages", selectedPages.join(","));
       }
 
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/tools/rotate`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const res = await apiUpload.post("/tools/rotate", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start rotation job.");

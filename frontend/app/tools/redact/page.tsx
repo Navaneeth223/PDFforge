@@ -5,7 +5,7 @@ import { UniversalDropzone } from "@/components/dropzone/UniversalDropzone";
 import { JobProgress } from "@/components/progress/JobProgress";
 import { motion } from "framer-motion";
 import { ShieldAlert } from "lucide-react";
-import axios from "axios";
+import { apiUpload } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function RedactToolPage() {
@@ -30,11 +30,7 @@ export default function RedactToolPage() {
       formData.append("search_terms", searchTerms);
       formData.append("case_sensitive", caseSensitive.toString());
 
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/tools/redact`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const res = await apiUpload.post("/tools/redact", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start redaction job.");

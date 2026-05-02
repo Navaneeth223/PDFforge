@@ -7,7 +7,7 @@ import { SettingsPanel } from "@/components/layout/SettingsPanel";
 import { Toolbar } from "@/components/toolbar/Toolbar";
 import { motion } from "framer-motion";
 import { FileSearch } from "lucide-react";
-import axios from "axios";
+import { apiUpload } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function MetadataToolPage() {
@@ -37,11 +37,7 @@ export default function MetadataToolPage() {
       if (creator) formData.append("creator", creator);
       if (producer) formData.append("producer", producer);
 
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/tools/metadata`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const res = await apiUpload.post("/tools/metadata", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start metadata job.");

@@ -7,7 +7,7 @@ import { SettingsPanel } from "@/components/layout/SettingsPanel";
 import { Toolbar } from "@/components/toolbar/Toolbar";
 import { motion } from "framer-motion";
 import { Crop } from "lucide-react";
-import axios from "axios";
+import { apiUpload } from "@/lib/api";
 import { toast } from "sonner";
 
 export default function CropToolPage() {
@@ -35,11 +35,7 @@ export default function CropToolPage() {
       formData.append("left", left.toString());
       formData.append("pages", pages);
 
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/v1/tools/crop`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const res = await apiUpload.post("/tools/crop", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to crop PDF.");
