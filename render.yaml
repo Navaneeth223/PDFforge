@@ -4,7 +4,7 @@ services:
     name: pdfforge-api
     env: docker
     dockerContext: ./backend
-    dockerFilePath: Dockerfile.backend
+    dockerfilePath: Dockerfile.backend
     plan: free
     envVars:
       - key: REDIS_URL
@@ -13,7 +13,7 @@ services:
           name: pdfforge-redis
           property: connectionString
       - key: ALLOWED_ORIGINS
-        value: https://pdfforge-frontend.vercel.app  # Replace with your Vercel URL
+        value: https://pd-fforge.vercel.app/  # Replace with your Vercel URL
       - key: SECRET_KEY
         generateValue: true
 
@@ -22,7 +22,7 @@ services:
     name: pdfforge-worker
     env: docker
     dockerContext: ./backend
-    dockerFilePath: Dockerfile.backend
+    dockerfilePath: Dockerfile.backend
     dockerCommand: celery -A services.job_queue.celery_app worker --loglevel=info
     plan: free
     envVars:
