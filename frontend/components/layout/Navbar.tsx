@@ -8,8 +8,8 @@ import { motion, AnimatePresence } from "framer-motion";
 const NAV_LINKS = [
   { label: "Organize", href: "/#tools" },
   { label: "Convert",  href: "/#tools" },
-  { label: "Edit",     href: "/#tools" },
-  { label: "Security", href: "/#tools" },
+  { label: "Edit & Security", href: "/#tools" },
+  { label: "Advanced", href: "/#tools" },
 ];
 
 export function Navbar() {

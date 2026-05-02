@@ -9,6 +9,7 @@ import zipfile
 from typing import List, Optional, Dict, Any
 import fitz  # PyMuPDF
 from PIL import Image
+import numpy as np
 from .storage import get_output_path, get_session_dir
 
 
@@ -557,7 +558,6 @@ def compare_pdfs(session_id: str, path_a: str, path_b: str) -> str:
             img_a = img_a.resize((w, h), Image.LANCZOS)
             img_b = img_b.resize((w, h), Image.LANCZOS)
 
-            import numpy as np
             arr_a = np.array(img_a, dtype=np.int16)
             arr_b = np.array(img_b, dtype=np.int16)
             diff = np.abs(arr_a - arr_b).sum(axis=2)  # per-pixel channel sum
