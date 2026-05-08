@@ -27,7 +27,7 @@ services:
       - SECRET_KEY=${SECRET_KEY:-changeme-in-production}
       - ALLOWED_ORIGINS=http://localhost
     volumes:
-      - pdfforge_tmp:/tmp/pdfforge
+      - docxio_tmp:/tmp/docxio
     depends_on:
       - redis
     restart: unless-stopped
@@ -44,7 +44,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=${SECRET_KEY:-changeme-in-production}
     volumes:
-      - pdfforge_tmp:/tmp/pdfforge
+      - docxio_tmp:/tmp/docxio
     depends_on:
       - redis
     restart: unless-stopped
@@ -69,5 +69,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  pdfforge_tmp:
+  docxio_tmp:
   redis_data:

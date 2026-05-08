@@ -12,6 +12,5 @@ async def repair_pdf(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail="Only PDF files are accepted.")
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-    job_id = str(uuid.uuid4())
-    process_repair_job.delay(job_id, session_id, file_path)
-    return JobResponse(job_id=job_id)
+        job = process_repair_job.delay(str(uuid.uuid4()), session_id, file_path)
+    return JobResponse(job_id=job.id)

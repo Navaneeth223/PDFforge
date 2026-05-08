@@ -8,7 +8,8 @@ import asyncio
 import time
 from config import settings
 
-BASE_DIR = "/tmp/pdfforge"
+import tempfile
+BASE_DIR = os.path.join(tempfile.gettempdir(), "docxio")
 
 
 async def cleanup_loop():

@@ -28,4 +28,4 @@ async def protect_pdf(
         user_password, owner_password or user_password,
         allow_print, allow_copy, allow_edit, allow_annotate
     )
-    return JobResponse(job_id=job_id)
+    return JobResponse(job_id=job.id)

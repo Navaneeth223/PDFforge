@@ -6,10 +6,13 @@ import { Github, Menu, X, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const NAV_LINKS = [
-  { label: "Organize", href: "/#tools" },
-  { label: "Convert",  href: "/#tools" },
-  { label: "Edit & Security", href: "/#tools" },
-  { label: "Advanced", href: "/#tools" },
+  { label: "PDF", href: "/tools/pdf" },
+  { label: "Word", href: "/tools/word" },
+  { label: "Excel", href: "/tools/excel" },
+  { label: "PPT", href: "/tools/ppt" },
+  { label: "Images", href: "/tools/image" },
+  { label: "Convert", href: "/tools/convert" },
+  { label: "Editor", href: "/editor" },
 ];
 
 export function Navbar() {
@@ -46,11 +49,11 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 flex-shrink-0">
             <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center shadow-lg shadow-indigo-500/30">
-              <FileText className="w-5 h-5 text-white" />
+              <span className="text-white font-black text-lg">D</span>
             </div>
             <span className="font-serif font-black text-xl tracking-tight">
-              <span className="text-white">PDF</span>
-              <span className="text-indigo-400">Forge</span>
+              <span className="text-white">Docx</span>
+              <span className="text-indigo-400">io</span>
             </span>
           </Link>
 
@@ -70,7 +73,7 @@ export function Navbar() {
           {/* Right section */}
           <div className="flex items-center gap-3">
             <a
-              href="https://github.com/Navaneeth223/PDFforge"
+              href="https://github.com/Navaneeth223/docxio"
               target="_blank"
               rel="noreferrer"
               className="hidden sm:flex items-center gap-2 text-sm text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors"
@@ -79,10 +82,10 @@ export function Navbar() {
               <span className="hidden lg:block">GitHub</span>
             </a>
             <Link
-              href="/#tools"
+              href="/editor"
               className="hidden sm:inline-flex items-center gap-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors shadow-lg shadow-indigo-500/25"
             >
-              Start Free
+              Open Editor
             </Link>
 
             {/* Mobile hamburger */}
@@ -119,7 +122,7 @@ export function Navbar() {
               ))}
               <div className="border-t border-white/5 mt-2 pt-4 flex flex-col gap-2">
                 <a
-                  href="https://github.com/Navaneeth223/PDFforge"
+                  href="https://github.com/Navaneeth223/docxio"
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-400 hover:text-white rounded-xl hover:bg-white/5 transition-colors"

@@ -26,29 +26,29 @@ export const viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "PDFForge — Every PDF Tool. Free Forever. Open Source.",
-    template: "%s | PDFForge",
+    default: "Docxio — Every Document & PDF Tool. Free Forever. Open Source.",
+    template: "%s | Docxio",
   },
   description:
-    "PDFForge is a free, self-hostable, open-source PDF toolkit. Merge, split, compress, convert, edit, sign, and protect PDFs — no registration, no watermarks, no limits.",
+    "Docxio is a free, self-hostable, open-source document toolkit. Edit PDFs, convert Word/Excel/PPT, AI background removal, and a visual Canvas editor — no registration, no limits.",
   keywords: [
-    "PDF editor", "merge PDF", "split PDF", "compress PDF",
-    "PDF to Word", "PDF tools", "free PDF", "open source PDF",
+    "PDF editor", "Word to PDF", "Excel to PDF", "Canvas editor",
+    "document tools", "free PDF", "open source PDF", "background removal",
   ],
-  authors: [{ name: "PDFForge" }],
-  creator: "PDFForge",
+  authors: [{ name: "Docxio" }],
+  creator: "Docxio",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://pdfforge.app",
-    title: "PDFForge — Every PDF Tool. Free Forever.",
-    description: "25+ free PDF tools. No registration. No watermarks. Open source.",
-    siteName: "PDFForge",
+    url: "https://docxio.app",
+    title: "Docxio — Every Document & PDF Tool. Free Forever.",
+    description: "45+ free document tools. No registration. No watermarks. Open source.",
+    siteName: "Docxio",
   },
   twitter: {
     card: "summary_large_image",
-    title: "PDFForge — Every PDF Tool. Free Forever.",
-    description: "25+ free PDF tools. No registration. No watermarks. Open source.",
+    title: "Docxio — Every Document & PDF Tool. Free Forever.",
+    description: "45+ free document tools. No registration. No watermarks. Open source.",
   },
   robots: { index: true, follow: true },
 };

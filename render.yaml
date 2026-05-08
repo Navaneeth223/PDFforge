@@ -1,5 +1,5 @@
 envVarGroups:
-  - name: pdfforge-shared
+  - name: docxio-shared
     envVars:
       - key: SECRET_KEY
         generateValue: true
@@ -7,39 +7,39 @@ envVarGroups:
 services:
   # ─── FastAPI Application ───────────────────────────────────────────────────
   - type: web
-    name: pdfforge-api
+    name: docxio-api
     env: docker
     dockerContext: ./backend
     dockerfilePath: Dockerfile.backend
     plan: free
     envVars:
-      - fromGroup: pdfforge-shared
+      - fromGroup: docxio-shared
       - key: REDIS_URL
         fromService:
           type: redis
-          name: pdfforge-redis
+          name: docxio-redis
           property: connectionString
       - key: ALLOWED_ORIGINS
-        value: https://pd-fforge.vercel.app,https://pdfforge-frontend.vercel.app
+        value: https://docxio.vercel.app,https://docxio-frontend.vercel.app
 
   # ─── Celery Worker ──────────────────────────────────────────────────────────
   - type: worker
-    name: pdfforge-worker
+    name: docxio-worker
     env: docker
     dockerContext: ./backend
     dockerfilePath: Dockerfile.backend
     dockerCommand: celery -A services.job_queue.celery_app worker --loglevel=info --concurrency=2
     plan: free
     envVars:
-      - fromGroup: pdfforge-shared
+      - fromGroup: docxio-shared
       - key: REDIS_URL
         fromService:
           type: redis
-          name: pdfforge-redis
+          name: docxio-redis
           property: connectionString
 
   # ─── Redis ──────────────────────────────────────────────────────────────────
   - type: redis
-    name: pdfforge-redis
+    name: docxio-redis
     ipAllowList: [] # Only allow internal connections
     plan: free

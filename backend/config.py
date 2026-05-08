@@ -5,7 +5,7 @@ import os
 class Settings(BaseSettings):
     max_file_size_mb: int = 100
     file_retention_minutes: int = 60
-    redis_url: str = "redis://redis:6379/0"
+    redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     allowed_origins: str = "http://localhost:3000"
     secret_key: str = "super-secret-key-change-in-production"
 

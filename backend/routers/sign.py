@@ -40,4 +40,4 @@ async def sign_pdf(
         sign_type, sig_path, typed_text,
         page_number, x, y, width, height
     )
-    return JobResponse(job_id=job_id)
+    return JobResponse(job_id=job.id)

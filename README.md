@@ -1,17 +1,19 @@
-# PDFForge
+# Docxio
 
-PDFForge is a powerful, self-hostable, and completely free open-source PDF toolkit. Forget vendor lock-in, uploading sensitive documents to third-party servers, and expensive subscriptions. PDFForge brings 25+ PDF manipulation tools directly to your infrastructure.
+Every document tool. Free forever. Open source.
 
-![PDFForge Banner](https://capsule-render.vercel.app/api?type=waving&color=0:0f2027,50:203a43,100:2c5364&height=200&section=header&text=PDFForge&fontSize=50&fontColor=ffffff&animation=fadeIn)
+![Docxio Banner](https://capsule-render.vercel.app/api?type=waving&color=0:0f2027,50:203a43,100:2c5364&height=200&section=header&text=Docxio&fontSize=50&fontColor=ffffff&animation=fadeIn)
 
 ## Features
 
-- **Merge & Split:** Combine multiple PDFs or extract exact page ranges.
-- **Compress:** Drastically reduce PDF file sizes while maintaining quality.
-- **Convert:** Transform PDFs to Word, Excel, Images, Text, and vice-versa.
-- **Security:** Encrypt with AES-256, unlock documents, and permanently redact sensitive information.
-- **Edit:** Rotate pages, add watermarks, sign documents, edit metadata, and repair corrupted files.
-- **100% Private:** Your files never leave your server. Auto-cleanup ensures files are deleted instantly upon completion.
+- **📄 PDF Tools:** Merge, split, compress, convert, sign, and protect.
+- **📝 Word Tools:** Word to PDF/HTML/Text, merge docs, and remove passwords.
+- **📊 Excel Tools:** Excel to PDF/CSV/JSON and merge sheets.
+- **📽️ PowerPoint Tools:** PPT to PDF, images, or video (slideshow).
+- **🖼️ Image Tools:** Resize, compress, convert, and AI background removal.
+- **✏️ Canvas PDF Editor:** A flagship visual editor to drag-and-drop elements on any PDF.
+- **🔄 Universal Converter:** Smart "from → to" format matrix for all your document needs.
+- **100% Private:** Open-source and self-hostable. Your files never leave your infrastructure.
 - **Asynchronous Processing:** Built on Celery and Redis to handle massive files without blocking.
 
 ## Tech Stack
@@ -28,7 +30,7 @@ PDFForge can be deployed in two primary ways:
 This is the recommended way for maximum privacy.
 ```bash
 # Clone and enter repo
-git clone https://github.com/Navaneeth223/PDFforge.git && cd PDFforge
+git clone https://github.com/Navaneeth223/docxio.git && cd docxio
 
 # Start everything
 docker-compose up -d --build

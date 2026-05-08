@@ -38,4 +38,4 @@ async def add_watermark(
         watermark_type, text, wm_image_path,
         opacity, angle, position, font_size, color
     )
-    return JobResponse(job_id=job_id)
+    return JobResponse(job_id=job.id)

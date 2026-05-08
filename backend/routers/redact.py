@@ -20,4 +20,4 @@ async def redact_pdf(
     job_id = str(uuid.uuid4())
     terms_list = [t.strip() for t in search_terms.split(",")] if search_terms else []
     process_redact_job.delay(job_id, session_id, file_path, terms_list, case_sensitive)
-    return JobResponse(job_id=job_id)
+    return JobResponse(job_id=job.id)

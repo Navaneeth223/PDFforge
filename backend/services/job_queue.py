@@ -10,7 +10,7 @@ from celery import Celery
 from config import settings
 
 celery_app = Celery(
-    "pdfforge_worker",
+    "docxio_worker",
     broker=settings.redis_url,
     backend=settings.redis_url,
     include=["services.job_queue"]
@@ -329,4 +329,160 @@ def process_pdf_to_ppt_job(self, job_id: str, session_id: str, file_path: str):
     from services.converter import pdf_to_ppt
     _update(self, "PROGRESS", {"progress": 10, "message": "Rendering PDF pages as slides…"})
     out = pdf_to_ppt(session_id, file_path)
+    return {"output_path": out, "progress": 100}
+
+
+# ─── Word Tools ───────────────────────────────────────────────────────────────
+
+@celery_app.task(bind=True, name="tasks.word_to_pdf")
+def process_word_to_pdf_job(self, job_id: str, session_id: str, file_path: str):
+    from services.converter import office_to_pdf
+    _update(self, "PROGRESS", {"progress": 10, "message": "Converting Word to PDF…"})
+    loop = asyncio.new_event_loop()
+    out = loop.run_until_complete(office_to_pdf(session_id, file_path))
+    loop.close()
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.word_to_html")
+def process_word_to_html_job(self, job_id: str, session_id: str, file_path: str):
+    from services.word_service import word_to_html
+    _update(self, "PROGRESS", {"progress": 20, "message": "Converting Word to HTML…"})
+    out = word_to_html(session_id, file_path)
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.word_to_text")
+def process_word_to_text_job(self, job_id: str, session_id: str, file_path: str):
+    from services.word_service import word_to_text
+    _update(self, "PROGRESS", {"progress": 20, "message": "Extracting text from Word…"})
+    out = word_to_text(session_id, file_path)
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.merge_word")
+def process_merge_word_job(self, job_id: str, session_id: str, file_paths: List[str]):
+    from services.word_service import merge_word_docs
+    _update(self, "PROGRESS", {"progress": 20, "message": "Merging Word documents…"})
+    out = merge_word_docs(session_id, file_paths)
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.word_compress")
+def process_word_compress_job(self, job_id: str, session_id: str, file_path: str):
+    from services.word_service import compress_word
+    _update(self, "PROGRESS", {"progress": 20, "message": "Compressing Word file…"})
+    out = compress_word(session_id, file_path)
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.word_unlock")
+def process_word_unlock_job(self, job_id: str, session_id: str, file_path: str, password: str):
+    from services.word_service import remove_word_password
+    _update(self, "PROGRESS", {"progress": 20, "message": "Removing Word password…"})
+    out = remove_word_password(session_id, file_path, password)
+    return {"output_path": out, "progress": 100}
+
+
+# ─── Excel Tools ──────────────────────────────────────────────────────────────
+
+@celery_app.task(bind=True, name="tasks.excel_to_pdf")
+def process_excel_to_pdf_job(self, job_id: str, session_id: str, file_path: str):
+    from services.converter import office_to_pdf
+    _update(self, "PROGRESS", {"progress": 10, "message": "Converting Excel to PDF…"})
+    loop = asyncio.new_event_loop()
+    out = loop.run_until_complete(office_to_pdf(session_id, file_path))
+    loop.close()
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.excel_to_csv")
+def process_excel_to_csv_job(self, job_id: str, session_id: str, file_path: str):
+    from services.excel_service import excel_to_csv
+    _update(self, "PROGRESS", {"progress": 20, "message": "Converting Excel to CSV…"})
+    out = excel_to_csv(session_id, file_path)
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.excel_to_json")
+def process_excel_to_json_job(self, job_id: str, session_id: str, file_path: str):
+    from services.excel_service import excel_to_json
+    _update(self, "PROGRESS", {"progress": 20, "message": "Converting Excel to JSON…"})
+    out = excel_to_json(session_id, file_path)
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.merge_excel")
+def process_merge_excel_job(self, job_id: str, session_id: str, file_paths: List[str]):
+    from services.excel_service import merge_excel_sheets
+    _update(self, "PROGRESS", {"progress": 20, "message": "Merging Excel sheets…"})
+    out = merge_excel_sheets(session_id, file_paths)
+    return {"output_path": out, "progress": 100}
+
+
+# ─── PowerPoint Tools ─────────────────────────────────────────────────────────
+
+@celery_app.task(bind=True, name="tasks.ppt_to_pdf")
+def process_ppt_to_pdf_job(self, job_id: str, session_id: str, file_path: str):
+    from services.converter import office_to_pdf
+    _update(self, "PROGRESS", {"progress": 10, "message": "Converting PPT to PDF…"})
+    loop = asyncio.new_event_loop()
+    out = loop.run_until_complete(office_to_pdf(session_id, file_path))
+    loop.close()
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.ppt_to_images")
+def process_ppt_to_images_job(self, job_id: str, session_id: str, file_path: str):
+    from services.ppt_service import ppt_to_images
+    _update(self, "PROGRESS", {"progress": 10, "message": "Converting PPT to images…"})
+    loop = asyncio.new_event_loop()
+    out = loop.run_until_complete(ppt_to_images(session_id, file_path))
+    loop.close()
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.merge_ppt")
+def process_merge_ppt_job(self, job_id: str, session_id: str, file_paths: List[str]):
+    from services.ppt_service import merge_presentations
+    _update(self, "PROGRESS", {"progress": 20, "message": "Merging Presentations…"})
+    out = merge_presentations(session_id, file_paths)
+    return {"output_path": out, "progress": 100}
+
+
+# ─── Image Tools ──────────────────────────────────────────────────────────────
+
+@celery_app.task(bind=True, name="tasks.images_to_pdf_direct")
+def process_images_to_pdf_direct_job(self, job_id: str, session_id: str, file_paths: List[str]):
+    from services.pdf_engine import images_to_pdf
+    _update(self, "PROGRESS", {"progress": 10, "message": "Building PDF from images…"})
+    out = images_to_pdf(session_id, file_paths, "fit", "A4")
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.image_compress")
+def process_image_compress_job(self, job_id: str, session_id: str, file_path: str):
+    from services.image_service import compress_image
+    _update(self, "PROGRESS", {"progress": 20, "message": "Compressing image…"})
+    out = compress_image(session_id, file_path)
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.image_convert")
+def process_image_convert_job(self, job_id: str, session_id: str, file_path: str, fmt: str):
+    from services.image_service import convert_image
+    _update(self, "PROGRESS", {"progress": 20, "message": f"Converting image to {fmt}…"})
+    out = convert_image(session_id, file_path, fmt)
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.image_resize")
+def process_image_resize_job(self, job_id: str, session_id: str, file_path: str, w: int, h: int):
+    from services.image_service import resize_image
+    _update(self, "PROGRESS", {"progress": 20, "message": "Resizing image…"})
+    out = resize_image(session_id, file_path, w, h)
+    return {"output_path": out, "progress": 100}
+
+@celery_app.task(bind=True, name="tasks.remove_bg")
+def process_remove_bg_job(self, job_id: str, session_id: str, file_path: str):
+    from services.image_service import remove_background
+    _update(self, "PROGRESS", {"progress": 10, "message": "Removing background with AI…"})
+    out = remove_background(session_id, file_path)
+    return {"output_path": out, "progress": 100}
+
+
+# ─── Editor Tools ─────────────────────────────────────────────────────────────
+
+@celery_app.task(bind=True, name="tasks.editor_export")
+def process_editor_export_job(self, job_id: str, session_id: str, pages: List[Dict[str, Any]]):
+    from services.editor_service import export_editor_pdf
+    _update(self, "PROGRESS", {"progress": 20, "message": "Flattening canvas and exporting PDF…"})
+    out = export_editor_pdf(session_id, pages)
     return {"output_path": out, "progress": 100}

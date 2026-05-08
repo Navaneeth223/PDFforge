@@ -26,6 +26,5 @@ async def crop_pdf(
 
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-    job_id = str(uuid.uuid4())
-    process_crop_job.delay(job_id, session_id, file_path, top, right, bottom, left, pages)
-    return JobResponse(job_id=job_id)
+        job = process_crop_job.delay(str(uuid.uuid4()), session_id, file_path, top, right, bottom, left, pages)
+    return JobResponse(job_id=job.id)

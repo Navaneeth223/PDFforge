@@ -14,51 +14,49 @@ import {
 } from "lucide-react";
 
 const ALL_TOOLS = [
-  // Organize
-  { name: "Merge PDFs", desc: "Combine multiple PDFs into one", icon: Layers, href: "/tools/merge", color: "text-blue-500", bg: "bg-blue-500/10", category: "Organize" },
-  { name: "Split PDF", desc: "Extract pages or split into multiple files", icon: Scissors, href: "/tools/split", color: "text-indigo-500", bg: "bg-indigo-500/10", category: "Organize" },
-  { name: "Rotate PDF", desc: "Rotate pages 90, 180, or 270 degrees", icon: RotateCw, href: "/tools/rotate", color: "text-orange-500", bg: "bg-orange-500/10", category: "Organize" },
-  { name: "Extract Pages", desc: "Save specific pages as a new PDF", icon: Copy, href: "/tools/extract-pages", color: "text-cyan-500", bg: "bg-cyan-500/10", category: "Organize" },
-  { name: "Crop PDF", desc: "Trim white space or margins", icon: Crop, href: "/tools/crop", color: "text-amber-500", bg: "bg-amber-500/10", category: "Organize" },
+  // PDF
+  { name: "Merge PDFs", desc: "Combine multiple PDFs into one", icon: Layers, href: "/tools/merge", color: "text-blue-500", bg: "bg-blue-500/10", category: "PDF" },
+  { name: "Split PDF", desc: "Extract pages or split into multiple files", icon: Scissors, href: "/tools/split", color: "text-indigo-500", bg: "bg-indigo-500/10", category: "PDF" },
+  { name: "Compress", desc: "Reduce file size without losing quality", icon: Minimize2, href: "/tools/compress", color: "text-purple-500", bg: "bg-purple-500/10", category: "PDF" },
+  { name: "Sign PDF", desc: "Add electronic signatures", icon: PenTool, href: "/tools/sign", color: "text-yellow-500", bg: "bg-yellow-500/10", category: "PDF" },
+  { name: "OCR PDF", desc: "Make scanned PDFs searchable", icon: ScanText, href: "/tools/ocr", color: "text-yellow-600", bg: "bg-yellow-600/10", category: "PDF" },
+
+  // Word
+  { name: "Word to PDF", desc: "Convert .docx to high-quality PDF", icon: FileText, href: "/tools/word/word-to-pdf", color: "text-blue-400", bg: "bg-blue-400/10", category: "Word" },
+  { name: "Word to HTML", desc: "Convert Word documents to clean HTML", icon: Globe, href: "/tools/word/word-to-html", color: "text-orange-400", bg: "bg-orange-400/10", category: "Word" },
+  { name: "Merge Word", desc: "Combine multiple .docx files", icon: Copy, href: "/tools/word/merge-word", color: "text-indigo-400", bg: "bg-indigo-400/10", category: "Word" },
+  { name: "Word Compress", desc: "Reduce Word file size", icon: Minimize2, href: "/tools/word/compress-word", color: "text-purple-400", bg: "bg-purple-400/10", category: "Word" },
+
+  // Excel
+  { name: "Excel to PDF", desc: "Convert spreadsheets to PDF", icon: Table, href: "/tools/excel/excel-to-pdf", color: "text-green-500", bg: "bg-green-500/10", category: "Excel" },
+  { name: "Excel to CSV", desc: "Convert .xlsx to CSV format", icon: FileText, href: "/tools/excel/excel-to-csv", color: "text-emerald-500", bg: "bg-emerald-500/10", category: "Excel" },
+  { name: "Merge Excel", desc: "Combine multiple sheets into one", icon: Layers, href: "/tools/excel/merge-excel", color: "text-teal-500", bg: "bg-teal-500/10", category: "Excel" },
+
+  // PowerPoint
+  { name: "PPT to PDF", desc: "Convert presentations to PDF", icon: Presentation, href: "/tools/ppt/ppt-to-pdf", color: "text-red-500", bg: "bg-red-500/10", category: "PowerPoint" },
+  { name: "PPT to Images", desc: "Convert slides to high-res PNGs", icon: Images, href: "/tools/ppt/ppt-to-images", color: "text-rose-500", bg: "bg-rose-500/10", category: "PowerPoint" },
+  { name: "PPT to Video", desc: "Convert slideshow to MP4 video", icon: Zap, href: "/tools/ppt/ppt-to-video", color: "text-amber-500", bg: "bg-amber-500/10", category: "PowerPoint" },
+
+  // Image
+  { name: "Images to PDF", desc: "Convert JPG/PNG to PDF format", icon: ImageIcon, href: "/tools/image/images-to-pdf", color: "text-pink-500", bg: "bg-pink-500/10", category: "Images" },
+  { name: "Remove BG", desc: "AI-powered background removal", icon: Scissors, href: "/tools/image/remove-bg", color: "text-violet-500", bg: "bg-violet-500/10", category: "Images" },
+  { name: "Resize Image", desc: "Change image dimensions", icon: Crop, href: "/tools/image/resize-image", color: "text-sky-500", bg: "bg-sky-500/10", category: "Images" },
 
   // Convert
-  { name: "Images to PDF", desc: "Convert JPG/PNG to PDF format", icon: ImageIcon, href: "/tools/images-to-pdf", color: "text-pink-500", bg: "bg-pink-500/10", category: "Convert" },
-  { name: "Office to PDF", desc: "Convert Word, Excel, PPT to PDF", icon: Briefcase, href: "/tools/office-to-pdf", color: "text-blue-600", bg: "bg-blue-600/10", category: "Convert" },
-  { name: "HTML to PDF", desc: "Convert webpages or raw HTML to PDF", icon: Globe, href: "/tools/html-to-pdf", color: "text-blue-400", bg: "bg-blue-400/10", category: "Convert" },
-  { name: "PDF to Word", desc: "Convert PDF to editable Word document", icon: FileText, href: "/tools/pdf-to-word", color: "text-sky-500", bg: "bg-sky-500/10", category: "Convert" },
-  { name: "PDF to Excel", desc: "Extract tables to Excel spreadsheets", icon: Table, href: "/tools/pdf-to-excel", color: "text-green-500", bg: "bg-green-500/10", category: "Convert" },
-  { name: "PDF to PPT", desc: "Convert PDF pages to PPT slides", icon: Presentation, href: "/tools/pdf-to-ppt", color: "text-red-400", bg: "bg-red-400/10", category: "Convert" },
-  { name: "PDF to Images", desc: "Extract pages as high-quality images", icon: Images, href: "/tools/pdf-to-images", color: "text-rose-500", bg: "bg-rose-500/10", category: "Convert" },
-  { name: "PDF to Text", desc: "Extract plain text content", icon: Type, href: "/tools/pdf-to-text", color: "text-zinc-400", bg: "bg-zinc-400/10", category: "Convert" },
-  { name: "Extract Images", desc: "Save all embedded images from a PDF", icon: ImagePlus, href: "/tools/extract-images", color: "text-fuchsia-500", bg: "bg-fuchsia-500/10", category: "Convert" },
-
-  // Edit & Security
-  { name: "Compress", desc: "Reduce file size without losing quality", icon: Minimize2, href: "/tools/compress", color: "text-purple-500", bg: "bg-purple-500/10", category: "Edit & Security" },
-  { name: "Protect", desc: "Encrypt your PDF with AES-256", icon: Lock, href: "/tools/protect", color: "text-emerald-500", bg: "bg-emerald-500/10", category: "Edit & Security" },
-  { name: "Unlock", desc: "Remove password protection", icon: Unlock, href: "/tools/unlock", color: "text-teal-500", bg: "bg-teal-500/10", category: "Edit & Security" },
-  { name: "Redact", desc: "Permanently blackout sensitive info", icon: ShieldAlert, href: "/tools/redact", color: "text-red-500", bg: "bg-red-500/10", category: "Edit & Security" },
-  { name: "Sign PDF", desc: "Add electronic signatures", icon: PenTool, href: "/tools/sign", color: "text-yellow-500", bg: "bg-yellow-500/10", category: "Edit & Security" },
-  { name: "Watermark", desc: "Add text or image stamps", icon: Stamp, href: "/tools/watermark", color: "text-violet-500", bg: "bg-violet-500/10", category: "Edit & Security" },
-  { name: "Page Numbers", desc: "Add page numbering to your PDF", icon: Hash, href: "/tools/number-pages", color: "text-slate-400", bg: "bg-slate-400/10", category: "Edit & Security" },
-  { name: "Metadata", desc: "View and edit document metadata", icon: FileSearch, href: "/tools/metadata", color: "text-lime-500", bg: "bg-lime-500/10", category: "Edit & Security" },
-
-  // Advanced
-  { name: "OCR PDF", desc: "Make scanned PDFs searchable", icon: ScanText, href: "/tools/ocr", color: "text-yellow-600", bg: "bg-yellow-600/10", category: "Advanced" },
-  { name: "Repair PDF", desc: "Fix corrupted or broken PDF files", icon: Wrench, href: "/tools/repair", color: "text-orange-600", bg: "bg-orange-600/10", category: "Advanced" },
-  { name: "Compare PDFs", desc: "Side-by-side visual difference", icon: GitCompare, href: "/tools/compare", color: "text-teal-600", bg: "bg-teal-600/10", category: "Advanced" },
+  { name: "Smart Converter", desc: "Convert anything to anything", icon: Zap, href: "/tools/convert", color: "text-yellow-400", bg: "bg-yellow-400/10", category: "Convert" },
 ];
 
-const CATEGORIES = ["All", "Organize", "Convert", "Edit & Security", "Advanced"];
+const CATEGORIES = ["All Tools", "PDF", "Word", "Excel", "PowerPoint", "Images", "Convert"];
 
 export default function LandingPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeCategory, setActiveCategory] = useState("All Tools");
 
   const filteredTools = useMemo(() => {
     return ALL_TOOLS.filter(tool => {
       const matchesSearch = tool.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            tool.desc.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = activeCategory === "All" || tool.category === activeCategory;
+      const matchesCategory = activeCategory === "All Tools" || tool.category === activeCategory;
       return matchesSearch && matchesCategory;
     });
   }, [searchQuery, activeCategory]);
@@ -75,14 +73,17 @@ export default function LandingPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-5xl md:text-7xl font-black font-serif tracking-tight text-white mb-6">
-              Every PDF Tool.<br />
-              <span className="text-gradient">Free Forever.</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-indigo-400 uppercase tracking-widest mb-6">
+              <Zap className="w-3 h-3 fill-current" /> Every Document Tool
+            </div>
+            <h1 className="text-6xl md:text-8xl font-black font-serif tracking-tight text-white mb-6">
+              Every tool.<br />
+              <span className="text-gradient">Free forever.</span>
             </h1>
             <p className="text-xl text-zinc-400 max-w-2xl mx-auto font-medium">
-              A complete, open-source toolkit for all your PDF needs.
+              No registration. No limits. Open source.
               <br className="hidden md:block" />
-              No registration, no limits, 100% private.
+              The ultimate toolkit for PDF, Word, Excel, PPT, and Images.
             </p>
           </motion.div>
 
@@ -90,66 +91,46 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="flex items-center justify-center gap-4 pt-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
           >
-            <Link href="#tools" className="btn-primary shadow-indigo-500/25">
-              Explore Tools <ArrowRight className="w-4 h-4" />
+            <Link href="/editor" className="btn-primary shadow-indigo-500/25 px-8 py-4 text-lg">
+              Open Canvas Editor <ArrowRight className="w-5 h-5 ml-2" />
+            </Link>
+            <Link href="#tools" className="px-8 py-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold transition-all">
+              Explore All Tools
             </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* Features grid */}
-      <section className="py-20 px-6 bg-zinc-950/50 border-y border-white/5">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { icon: Zap, title: "Lightning Fast", desc: "Optimized C++/Python backend for instant processing." },
-            { icon: LockKeyhole, title: "100% Secure", desc: "Files are processed in memory and never stored permanently." },
-            { icon: Github, title: "Open Source", desc: "Completely free and self-hostable on your own servers." }
-          ].map((feature, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="glass p-6 rounded-2xl flex flex-col items-center text-center space-y-4"
-            >
-              <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center text-white">
-                <feature.icon className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-white">{feature.title}</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">{feature.desc}</p>
-            </motion.div>
-          ))}
+      {/* Stats Bar */}
+      <div className="py-8 bg-zinc-950/80 border-y border-white/5 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-6 flex flex-wrap justify-center gap-x-12 gap-y-4 text-zinc-500 text-xs font-bold uppercase tracking-widest">
+          <span>30+ Free Tools</span>
+          <span>All File Formats</span>
+          <span>No Registration</span>
+          <span>Open Source</span>
+          <span>Canvas Editor</span>
         </div>
-      </section>
+      </div>
 
       {/* Tools Section */}
       <section id="tools" className="py-24 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16 space-y-6">
-            <h2 className="text-3xl md:text-5xl font-black font-serif text-white tracking-tight">Our Toolkit</h2>
+            <h2 className="text-3xl md:text-5xl font-black font-serif text-white tracking-tight">Document Toolkit</h2>
             
             {/* Search and Filters */}
-            <div className="max-w-3xl mx-auto space-y-6">
+            <div className="max-w-3xl mx-auto space-y-8">
               <div className="relative group">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500 group-focus-within:text-indigo-400 transition-colors" />
                 <input 
                   type="text" 
-                  placeholder="Search 25+ PDF tools..."
+                  placeholder="Search 45+ document tools..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-lg"
+                  className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all text-xl"
                 />
-                {searchQuery && (
-                  <button 
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-full text-zinc-400"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-2">
@@ -157,9 +138,9 @@ export default function LandingPage() {
                   <button
                     key={cat}
                     onClick={() => setActiveCategory(cat)}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                    className={`px-6 py-2 rounded-xl text-sm font-bold transition-all ${
                       activeCategory === cat 
-                        ? "bg-white text-black" 
+                        ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" 
                         : "bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white"
                     }`}
                   >
@@ -188,31 +169,19 @@ export default function LandingPage() {
                   <Link href={tool.href} className="block h-full">
                     <motion.div
                       whileHover={{ y: -4 }}
-                      className="tool-card h-full flex flex-col p-5 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/[0.08] hover:border-white/20 transition-all group"
+                      className="tool-card h-full flex flex-col p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/[0.08] hover:border-white/20 transition-all group"
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 ${tool.bg} ${tool.color}`}>
-                        <tool.icon className="w-5 h-5" />
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 transition-transform group-hover:scale-110 ${tool.bg} ${tool.color}`}>
+                        <tool.icon className="w-6 h-6" />
                       </div>
-                      <h3 className="text-base font-bold text-white mb-1">{tool.name}</h3>
-                      <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2">{tool.desc}</p>
+                      <h3 className="text-lg font-bold text-white mb-2">{tool.name}</h3>
+                      <p className="text-sm text-zinc-500 leading-relaxed line-clamp-2">{tool.desc}</p>
                     </motion.div>
                   </Link>
                 </motion.div>
               ))}
             </AnimatePresence>
           </motion.div>
-
-          {filteredTools.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-zinc-500 text-lg">No tools found matching "{searchQuery}"</p>
-              <button 
-                onClick={() => { setSearchQuery(""); setActiveCategory("All"); }}
-                className="mt-4 text-indigo-400 hover:underline"
-              >
-                Clear all filters
-              </button>
-            </div>
-          )}
         </div>
       </section>
       
@@ -221,33 +190,27 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex flex-col items-center md:items-start gap-4">
             <div className="flex items-center gap-2 font-serif text-xl font-bold tracking-tight">
-              <span className="text-white">PDF</span>
-              <span className="text-indigo-400">Forge</span>
+              <span className="text-white">Docx</span>
+              <span className="text-indigo-400">io</span>
             </div>
             <p className="text-zinc-500 text-sm max-w-xs text-center md:text-left">
-              The precision-engineered open source PDF toolkit. 
-              Built for performance, privacy, and simplicity.
+              The universal open source document toolkit. 
+              Free forever. Open source.
             </p>
           </div>
           <div className="flex gap-12">
             <div className="space-y-4">
-              <h4 className="text-white font-bold text-sm uppercase tracking-widest">Platform</h4>
-              <ul className="text-zinc-500 text-sm space-y-2">
-                <li><Link href="/#tools" className="hover:text-white transition-colors">Tools</Link></li>
-                <li><a href="https://github.com" className="hover:text-white transition-colors">GitHub</a></li>
-              </ul>
-            </div>
-            <div className="space-y-4">
-              <h4 className="text-white font-bold text-sm uppercase tracking-widest">Legal</h4>
-              <ul className="text-zinc-500 text-sm space-y-2">
-                <li><span className="cursor-not-allowed">Privacy</span></li>
-                <li><span className="cursor-not-allowed">Terms</span></li>
+              <h4 className="text-white font-bold text-sm uppercase tracking-widest text-center md:text-left">Platform</h4>
+              <ul className="text-zinc-500 text-sm space-y-2 text-center md:text-left">
+                <li><Link href="/#tools" className="hover:text-white transition-colors">All Tools</Link></li>
+                <li><Link href="/editor" className="hover:text-white transition-colors font-bold text-indigo-400">Canvas Editor</Link></li>
+                <li><a href="https://github.com/Navaneeth223/docxio" className="hover:text-white transition-colors">GitHub</a></li>
               </ul>
             </div>
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-6 mt-16 pt-8 border-t border-white/5 text-center text-zinc-600 text-xs">
-          <p>© {new Date().getFullYear()} PDFForge. Built with Next.js, FastAPI, and PyMuPDF. MIT Licensed.</p>
+          <p>© {new Date().getFullYear()} Docxio. MIT Licensed.</p>
         </div>
       </footer>
     </div>

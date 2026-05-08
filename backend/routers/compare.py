@@ -22,6 +22,5 @@ async def compare_pdfs(
     session_id = str(uuid.uuid4())
     path_a = await save_upload_file(file_a, session_id)
     path_b = await save_upload_file(file_b, session_id)
-    job_id = str(uuid.uuid4())
-    process_compare_job.delay(job_id, session_id, path_a, path_b)
-    return JobResponse(job_id=job_id)
+        job = process_compare_job.delay(str(uuid.uuid4()), session_id, path_a, path_b)
+    return JobResponse(job_id=job.id)

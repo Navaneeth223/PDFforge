@@ -23,8 +23,7 @@ async def merge_pdfs(
         file_path = await save_upload_file(file, session_id)
         saved_files.append(file_path)
     
-    job_id = str(uuid.uuid4())
     # Fire and forget job
-    process_merge_job.delay(job_id, session_id, saved_files)
+    job = process_merge_job.delay(str(uuid.uuid4()), session_id, saved_files)
     
-    return JobResponse(job_id=job_id)
+    return JobResponse(job_id=job.id)

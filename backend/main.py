@@ -15,6 +15,7 @@ from routers import (
     convert, extract, repair, redact,
     sign, metadata, jobs,
     number_pages, crop, compare, pdf_to_ppt,
+    word, excel, ppt, image, editor,
 )
 
 
@@ -27,8 +28,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="PDFForge API",
-    description="Production-grade PDF tools — free, open-source, self-hostable.",
+    title="Docxio API",
+    description="Production-grade document tools — free, open-source, self-hostable.",
     version="1.0.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
@@ -82,6 +83,15 @@ app.include_router(number_pages.router,prefix=PREFIX)
 app.include_router(crop.router,        prefix=PREFIX)
 app.include_router(compare.router,     prefix=PREFIX)
 app.include_router(pdf_to_ppt.router,  prefix=PREFIX)
+
+# New document tools
+app.include_router(word.router,  prefix=PREFIX)
+app.include_router(excel.router, prefix=PREFIX)
+app.include_router(ppt.router,   prefix=PREFIX)
+app.include_router(image.router, prefix=PREFIX)
+
+# Editor router uses /api/v1 prefix
+app.include_router(editor.router, prefix="/api/v1")
 
 # Jobs router uses /api/v1 prefix (not /tools)
 app.include_router(jobs.router, prefix="/api/v1")

@@ -31,9 +31,8 @@ async def pdf_to_images(
         raise HTTPException(status_code=422, detail="format must be 'jpeg' or 'png'.")
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-    job_id = str(uuid.uuid4())
-    process_pdf_to_images_job.delay(job_id, session_id, file_path, dpi, format)
-    return JobResponse(job_id=job_id)
+        job = process_pdf_to_images_job.delay(str(uuid.uuid4()), session_id, file_path, dpi, format)
+    return JobResponse(job_id=job.id)
 
 
 @router.post("/pdf-to-word", response_model=JobResponse)
@@ -42,9 +41,8 @@ async def pdf_to_word(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail="Only PDF files are accepted.")
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-    job_id = str(uuid.uuid4())
-    process_pdf_to_word_job.delay(job_id, session_id, file_path)
-    return JobResponse(job_id=job_id)
+        job = process_pdf_to_word_job.delay(str(uuid.uuid4()), session_id, file_path)
+    return JobResponse(job_id=job.id)
 
 
 @router.post("/pdf-to-excel", response_model=JobResponse)
@@ -53,9 +51,8 @@ async def pdf_to_excel(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail="Only PDF files are accepted.")
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-    job_id = str(uuid.uuid4())
-    process_pdf_to_excel_job.delay(job_id, session_id, file_path)
-    return JobResponse(job_id=job_id)
+        job = process_pdf_to_excel_job.delay(str(uuid.uuid4()), session_id, file_path)
+    return JobResponse(job_id=job.id)
 
 
 @router.post("/pdf-to-text", response_model=JobResponse)
@@ -64,9 +61,8 @@ async def pdf_to_text(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail="Only PDF files are accepted.")
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-    job_id = str(uuid.uuid4())
-    process_pdf_to_text_job.delay(job_id, session_id, file_path)
-    return JobResponse(job_id=job_id)
+        job = process_pdf_to_text_job.delay(str(uuid.uuid4()), session_id, file_path)
+    return JobResponse(job_id=job.id)
 
 
 @router.post("/office-to-pdf", response_model=JobResponse)
@@ -79,9 +75,8 @@ async def office_to_pdf(file: UploadFile = File(...)):
         )
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-    job_id = str(uuid.uuid4())
-    process_office_to_pdf_job.delay(job_id, session_id, file_path)
-    return JobResponse(job_id=job_id)
+        job = process_office_to_pdf_job.delay(str(uuid.uuid4()), session_id, file_path)
+    return JobResponse(job_id=job.id)
 
 
 @router.post("/images-to-pdf", response_model=JobResponse)
@@ -97,9 +92,8 @@ async def images_to_pdf(
     saved = []
     for f in files:
         saved.append(await save_upload_file(f, session_id))
-    job_id = str(uuid.uuid4())
-    process_images_to_pdf_job.delay(job_id, session_id, saved, layout, page_size)
-    return JobResponse(job_id=job_id)
+        job = process_images_to_pdf_job.delay(str(uuid.uuid4()), session_id, saved, layout, page_size)
+    return JobResponse(job_id=job.id)
 
 
 @router.post("/html-to-pdf", response_model=JobResponse)
@@ -110,6 +104,5 @@ async def html_to_pdf(
     if not html_content and not url:
         raise HTTPException(status_code=422, detail="Provide either html_content or url.")
     session_id = str(uuid.uuid4())
-    job_id = str(uuid.uuid4())
-    process_html_to_pdf_job.delay(job_id, session_id, html_content, url)
-    return JobResponse(job_id=job_id)
+        job = process_html_to_pdf_job.delay(str(uuid.uuid4()), session_id, html_content, url)
+    return JobResponse(job_id=job.id)

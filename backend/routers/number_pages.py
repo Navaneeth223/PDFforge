@@ -38,4 +38,4 @@ async def number_pages(
         job_id, session_id, file_path,
         h_align, v_align, start_number, font_size, prefix, suffix
     )
-    return JobResponse(job_id=job_id)
+    return JobResponse(job_id=job.id)

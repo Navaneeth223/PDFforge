@@ -12,7 +12,8 @@ import aiofiles
 from fastapi import UploadFile
 from config import settings
 
-BASE_DIR = "/tmp/pdfforge"
+import tempfile
+BASE_DIR = os.path.join(tempfile.gettempdir(), "docxio")
 
 
 def get_session_dir(session_id: str) -> str:
