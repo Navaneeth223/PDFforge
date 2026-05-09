@@ -6,6 +6,7 @@ import {
   Minus, Scissors, Eraser, Grid3X3, ZoomIn, ZoomOut
 } from "lucide-react";
 import { useEditorStore, ToolType } from "@/store/editorStore";
+import { fabric } from "fabric";
 
 const TOOLS = [
   { id: 'select', icon: MousePointer2, label: 'Select' },
@@ -18,14 +19,104 @@ const TOOLS = [
 ];
 
 export default function Toolbar() {
-  const { activeTool, setTool, toggleGrid, showGrid } = useEditorStore();
+  const { activeTool, setTool } = useEditorStore();
+
+  const handleToolClick = (toolId: ToolType) => {
+    setTool(toolId);
+    const canvas = useEditorStore.getState().canvas;
+    if (!canvas) return;
+
+    const center = canvas.getCenter();
+
+    if (toolId === 'rect') {
+      const rect = new fabric.Rect({
+        left: center.left,
+        top: center.top,
+        fill: '#6366f1',
+        width: 150,
+        height: 100,
+        originX: 'center',
+        originY: 'center',
+        rx: 8,
+        ry: 8
+      });
+      canvas.add(rect);
+      canvas.setActiveObject(rect);
+      setTool('select');
+    } else if (toolId === 'circle') {
+      const circle = new fabric.Circle({
+        left: center.left,
+        top: center.top,
+        fill: '#10b981',
+        radius: 60,
+        originX: 'center',
+        originY: 'center',
+      });
+      canvas.add(circle);
+      canvas.setActiveObject(circle);
+      setTool('select');
+    } else if (toolId === 'text') {
+      const text = new fabric.IText('Type something', {
+        left: center.left,
+        top: center.top,
+        fontFamily: 'sans-serif',
+        fill: '#000000',
+        fontSize: 32,
+        originX: 'center',
+        originY: 'center',
+      });
+      canvas.add(text);
+      canvas.setActiveObject(text);
+      text.enterEditing();
+      text.selectAll();
+      setTool('select');
+    } else if (toolId === 'arrow') {
+      // Just a simple line for now, fabric arrows require custom drawing
+      const line = new fabric.Line([center.left - 50, center.top, center.left + 50, center.top], {
+        strokeWidth: 4,
+        fill: '#000000',
+        stroke: '#000000',
+        originX: 'center',
+        originY: 'center',
+      });
+      canvas.add(line);
+      canvas.setActiveObject(line);
+      setTool('select');
+    } else if (toolId === 'image') {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (e: any) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (f) => {
+          fabric.Image.fromURL(f.target?.result as string, (img) => {
+            img.scaleToWidth(300);
+            img.set({
+              left: center.left,
+              top: center.top,
+              originX: 'center',
+              originY: 'center',
+            });
+            canvas.add(img);
+            canvas.setActiveObject(img);
+            setTool('select');
+          });
+        };
+        reader.readAsDataURL(file);
+      };
+      input.click();
+      setTool('select');
+    }
+  };
 
   return (
     <div className="w-16 bg-zinc-950 border-r border-white/5 flex flex-col items-center py-6 gap-4 z-20">
       {TOOLS.map((tool) => (
         <button
           key={tool.id}
-          onClick={() => setTool(tool.id as ToolType)}
+          onClick={() => handleToolClick(tool.id as ToolType)}
           className={`p-3 rounded-xl transition-all group relative ${
             activeTool === tool.id 
               ? "bg-indigo-500 text-white shadow-lg shadow-indigo-500/20" 
@@ -34,20 +125,11 @@ export default function Toolbar() {
           title={tool.label}
         >
           <tool.icon className="w-5 h-5" />
-          <span className="absolute left-full ml-4 px-2 py-1 bg-zinc-800 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-white/5">
+          <span className="absolute left-full ml-4 px-2 py-1 bg-zinc-800 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-white/5 z-50">
             {tool.label}
           </span>
         </button>
       ))}
-
-      <div className="mt-auto flex flex-col gap-4">
-        <button 
-          onClick={toggleGrid}
-          className={`p-3 rounded-xl transition-all ${showGrid ? "text-indigo-400 bg-indigo-500/10" : "text-zinc-500 hover:text-white hover:bg-white/5"}`}
-        >
-          <Grid3X3 className="w-5 h-5" />
-        </button>
-      </div>
     </div>
   );
 }

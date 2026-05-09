@@ -64,6 +64,26 @@ export default function EditorCanvas() {
       canvas.freeDrawingBrush.width = 5;
       canvas.freeDrawingBrush.color = "#000000";
     }
+
+    // Keydown listener for delete
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const activeObjects = canvas.getActiveObjects();
+        if (activeObjects.length) {
+          // Check if we are currently editing text so we don't delete the whole object
+          const isTextEditing = activeObjects.some(obj => (obj as any).isEditing);
+          if (!isTextEditing) {
+            canvas.remove(...activeObjects);
+            canvas.discardActiveObject();
+          }
+        }
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [activeTool]);
 
   return (
@@ -71,11 +91,6 @@ export default function EditorCanvas() {
       <div className="shadow-2xl shadow-black/50 ring-1 ring-white/10">
         <canvas ref={canvasRef} />
       </div>
-      
-      {showGrid && (
-        <div className="absolute inset-0 pointer-events-none opacity-10" 
-             style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-      )}
     </div>
   );
 }

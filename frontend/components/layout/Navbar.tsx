@@ -73,7 +73,7 @@ export function Navbar() {
           {/* Right section */}
           <div className="flex items-center gap-3">
             <a
-              href="https://github.com/Navaneeth223/docxio"
+              href="https://github.com/Navaneeth223/PDFforge"
               target="_blank"
               rel="noreferrer"
               className="hidden sm:flex items-center gap-2 text-sm text-zinc-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors"
@@ -122,7 +122,7 @@ export function Navbar() {
               ))}
               <div className="border-t border-white/5 mt-2 pt-4 flex flex-col gap-2">
                 <a
-                  href="https://github.com/Navaneeth223/docxio"
+                  href="https://github.com/Navaneeth223/PDFforge"
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-400 hover:text-white rounded-xl hover:bg-white/5 transition-colors"

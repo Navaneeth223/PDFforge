@@ -24,53 +24,53 @@ const CONVERSION_MAP: Record<string, { label: string, icon: any, options: { ext:
     label: "Word Document",
     icon: FileText,
     options: [
-      { ext: "pdf", label: "to PDF (.pdf)", endpoint: "/word/to-pdf" },
-      { ext: "html", label: "to HTML (.html)", endpoint: "/word/to-html" },
-      { ext: "txt", label: "to Text (.txt)", endpoint: "/word/to-text" },
+      { ext: "pdf", label: "to PDF (.pdf)", endpoint: "/tools/word/to-pdf" },
+      { ext: "html", label: "to HTML (.html)", endpoint: "/tools/word/to-html" },
+      { ext: "txt", label: "to Text (.txt)", endpoint: "/tools/word/to-text" },
     ]
   },
   ".xlsx": {
     label: "Excel Spreadsheet",
     icon: Table,
     options: [
-      { ext: "pdf", label: "to PDF (.pdf)", endpoint: "/excel/to-pdf" },
-      { ext: "csv", label: "to CSV (.csv)", endpoint: "/excel/to-csv" },
-      { ext: "json", label: "to JSON (.json)", endpoint: "/excel/to-json" },
+      { ext: "pdf", label: "to PDF (.pdf)", endpoint: "/tools/excel/to-pdf" },
+      { ext: "csv", label: "to CSV (.csv)", endpoint: "/tools/excel/to-csv" },
+      { ext: "json", label: "to JSON (.json)", endpoint: "/tools/excel/to-json" },
     ]
   },
   ".pptx": {
     label: "PowerPoint Presentation",
     icon: Presentation,
     options: [
-      { ext: "pdf", label: "to PDF (.pdf)", endpoint: "/ppt/to-pdf" },
-      { ext: "png", label: "to Images (.zip)", endpoint: "/ppt/to-images" },
+      { ext: "pdf", label: "to PDF (.pdf)", endpoint: "/tools/ppt/to-pdf" },
+      { ext: "png", label: "to Images (.zip)", endpoint: "/tools/ppt/to-images" },
     ]
   },
   ".png": {
     label: "Image (PNG)",
     icon: ImageIcon,
     options: [
-      { ext: "pdf", label: "to PDF (.pdf)", endpoint: "/image/to-pdf" },
-      { ext: "jpg", label: "to JPEG (.jpg)", endpoint: "/image/convert" },
-      { ext: "webp", label: "to WebP (.webp)", endpoint: "/image/convert" },
+      { ext: "pdf", label: "to PDF (.pdf)", endpoint: "/tools/image/to-pdf" },
+      { ext: "jpg", label: "to JPEG (.jpg)", endpoint: "/tools/image/convert" },
+      { ext: "webp", label: "to WebP (.webp)", endpoint: "/tools/image/convert" },
     ]
   },
   ".jpg": {
     label: "Image (JPEG)",
     icon: ImageIcon,
     options: [
-      { ext: "pdf", label: "to PDF (.pdf)", endpoint: "/image/to-pdf" },
-      { ext: "png", label: "to PNG (.png)", endpoint: "/image/convert" },
-      { ext: "webp", label: "to WebP (.webp)", endpoint: "/image/convert" },
+      { ext: "pdf", label: "to PDF (.pdf)", endpoint: "/tools/image/to-pdf" },
+      { ext: "png", label: "to PNG (.png)", endpoint: "/tools/image/convert" },
+      { ext: "webp", label: "to WebP (.webp)", endpoint: "/tools/image/convert" },
     ]
   },
   ".jpeg": {
     label: "Image (JPEG)",
     icon: ImageIcon,
     options: [
-      { ext: "pdf", label: "to PDF (.pdf)", endpoint: "/image/to-pdf" },
-      { ext: "png", label: "to PNG (.png)", endpoint: "/image/convert" },
-      { ext: "webp", label: "to WebP (.webp)", endpoint: "/image/convert" },
+      { ext: "pdf", label: "to PDF (.pdf)", endpoint: "/tools/image/to-pdf" },
+      { ext: "png", label: "to PNG (.png)", endpoint: "/tools/image/convert" },
+      { ext: "webp", label: "to WebP (.webp)", endpoint: "/tools/image/convert" },
     ]
   }
 };
