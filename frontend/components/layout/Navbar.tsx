@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Github, Menu, X, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,6 +19,7 @@ const NAV_LINKS = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 10);
@@ -35,6 +37,8 @@ export function Navbar() {
       document.body.style.overflow = "unset";
     };
   }, [mobileOpen]);
+
+  if (pathname?.startsWith("/editor")) return null;
 
   return (
     <>

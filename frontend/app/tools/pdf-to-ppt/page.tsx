@@ -23,7 +23,7 @@ export default function PDFToPPTPage() {
       formData.append("file", file);
 
       // Using the office-to-pdf style endpoint, but for pdf-to-ppt
-      const res = await apiUpload.post("/tools/pdf-to-ppt", formData);
+      const res = await apiUpload.post("/pdf-to-ppt", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start conversion.");

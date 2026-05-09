@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import TopBar from "@/components/editor/TopBar";
 import Toolbar from "@/components/editor/Toolbar";
 import EditorCanvas from "@/components/editor/EditorCanvas";
+import PropertiesPanel from "@/components/editor/PropertiesPanel";
 import { useEditorStore } from "@/store/editorStore";
 import { Upload, FileText, Loader2 } from "lucide-react";
 import axios from "axios";
@@ -83,7 +84,7 @@ export default function EditorPage() {
       <div className="flex-1 flex overflow-hidden">
         <Toolbar />
         <EditorCanvas />
-        {/* Properties/Layers panel could go here */}
+        <PropertiesPanel />
       </div>
     </div>
   );

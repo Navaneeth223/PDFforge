@@ -29,7 +29,7 @@ export default function PDFToImagesPage() {
       formData.append("dpi", dpi);
       formData.append("format", format);
 
-      const res = await apiUpload.post("/tools/pdf-to-images", formData);
+      const res = await apiUpload.post("/pdf-to-images", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start conversion.");

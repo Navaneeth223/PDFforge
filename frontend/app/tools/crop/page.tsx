@@ -35,7 +35,7 @@ export default function CropToolPage() {
       formData.append("left", left.toString());
       formData.append("pages", pages);
 
-      const res = await apiUpload.post("/tools/crop", formData);
+      const res = await apiUpload.post("/crop", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to crop PDF.");

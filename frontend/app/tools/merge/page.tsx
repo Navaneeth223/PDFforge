@@ -10,7 +10,7 @@ export default function MergeToolPage() {
       description="Combine multiple PDF files into one in the order you want. Free, fast, and completely secure."
       icon={Layers}
       category="PDF Tool"
-      endpoint="/tools/merge"
+      endpoint="/merge"
       buttonText="Merge PDFs"
       multiple={true}
       accept={{ "application/pdf": [".pdf"] }}

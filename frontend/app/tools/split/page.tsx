@@ -31,7 +31,7 @@ export default function SplitToolPage() {
       if (mode === "every_n") formData.append("every_n", everyN);
       if (mode === "pages") formData.append("pages", pages);
 
-      const res = await apiUpload.post("/tools/split", formData);
+      const res = await apiUpload.post("/split", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start split job.");

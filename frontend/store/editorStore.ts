@@ -18,6 +18,9 @@ interface EditorState {
   pages: PageData[];
   currentPageIndex: number;
   selectedObjects: fabric.Object[];
+  history: string[];
+  historyIndex: number;
+  isHistoryUpdating: boolean;
   
   // Actions
   setCanvas: (canvas: fabric.Canvas | null) => void;
@@ -27,6 +30,9 @@ interface EditorState {
   setZoom: (zoom: number) => void;
   setSelectedObjects: (objects: fabric.Object[]) => void;
   toggleGrid: () => void;
+  saveHistory: (state: string) => void;
+  undo: () => void;
+  redo: () => void;
 }
 
 export const useEditorStore = create<EditorState>((set) => ({
@@ -37,6 +43,9 @@ export const useEditorStore = create<EditorState>((set) => ({
   pages: [],
   currentPageIndex: 0,
   selectedObjects: [],
+  history: [],
+  historyIndex: -1,
+  isHistoryUpdating: false,
 
   setCanvas: (canvas) => set({ canvas }),
   setTool: (activeTool) => set({ activeTool }),
@@ -45,4 +54,39 @@ export const useEditorStore = create<EditorState>((set) => ({
   setZoom: (zoom) => set({ zoom }),
   setSelectedObjects: (selectedObjects) => set({ selectedObjects }),
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
+  saveHistory: (stateStr) => set((store) => {
+    const newHistory = store.history.slice(0, store.historyIndex + 1);
+    newHistory.push(stateStr);
+    return { history: newHistory, historyIndex: newHistory.length - 1 };
+  }),
+  undo: () => set((store) => {
+    if (store.historyIndex > 0) {
+      const newIndex = store.historyIndex - 1;
+      const stateStr = store.history[newIndex];
+      if (store.canvas) {
+        store.isHistoryUpdating = true;
+        store.canvas.loadFromJSON(stateStr, () => {
+          store.canvas?.renderAll();
+          useEditorStore.setState({ isHistoryUpdating: false });
+        });
+      }
+      return { historyIndex: newIndex, isHistoryUpdating: true };
+    }
+    return store;
+  }),
+  redo: () => set((store) => {
+    if (store.historyIndex < store.history.length - 1) {
+      const newIndex = store.historyIndex + 1;
+      const stateStr = store.history[newIndex];
+      if (store.canvas) {
+        store.isHistoryUpdating = true;
+        store.canvas.loadFromJSON(stateStr, () => {
+          store.canvas?.renderAll();
+          useEditorStore.setState({ isHistoryUpdating: false });
+        });
+      }
+      return { historyIndex: newIndex, isHistoryUpdating: true };
+    }
+    return store;
+  }),
 }));

@@ -36,7 +36,7 @@ export default function RotateToolPage() {
         formData.append("pages", selectedPages.join(","));
       }
 
-      const res = await apiUpload.post("/tools/rotate", formData);
+      const res = await apiUpload.post("/rotate", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start rotation job.");

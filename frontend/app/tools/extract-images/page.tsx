@@ -22,7 +22,7 @@ export default function ExtractImagesToolPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await apiUpload.post("/tools/extract-images", formData);
+      const res = await apiUpload.post("/extract-images", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start extraction job.");

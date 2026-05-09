@@ -29,7 +29,7 @@ export default function ImagesToPDFPage() {
       formData.append("layout", layout);
       formData.append("page_size", pageSize);
 
-      const res = await apiUpload.post("/tools/images-to-pdf", formData);
+      const res = await apiUpload.post("/images-to-pdf", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start conversion.");

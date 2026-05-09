@@ -39,7 +39,7 @@ export default function ProtectToolPage() {
       formData.append("allow_edit", allowEdit.toString());
       formData.append("allow_annotate", allowAnnotate.toString());
 
-      const res = await apiUpload.post("/tools/protect", formData);
+      const res = await apiUpload.post("/protect", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to protect PDF.");

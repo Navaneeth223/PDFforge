@@ -141,7 +141,7 @@ export default function LandingPage() {
                       className="tool-card h-full flex flex-col p-6 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/[0.08] hover:border-white/20 transition-all group"
                     >
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-5 transition-transform group-hover:scale-110 ${tool.bg} ${tool.color}`}>
-                        <tool.icon className="w-6 h-6" />
+                        {tool.icon ? <tool.icon className="w-6 h-6" /> : <Zap className="w-6 h-6" />}
                       </div>
                       <h3 className="text-lg font-bold text-white mb-2">{tool.name}</h3>
                       <p className="text-sm text-zinc-500 leading-relaxed line-clamp-2">{tool.desc}</p>

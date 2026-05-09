@@ -26,7 +26,7 @@ export default function OCRToolPage() {
       formData.append("file", file);
       formData.append("language", language);
 
-      const res = await apiUpload.post("/tools/ocr", formData);
+      const res = await apiUpload.post("/ocr", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start OCR job.");

@@ -30,7 +30,7 @@ export default function RedactToolPage() {
       formData.append("search_terms", searchTerms);
       formData.append("case_sensitive", caseSensitive.toString());
 
-      const res = await apiUpload.post("/tools/redact", formData);
+      const res = await apiUpload.post("/redact", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start redaction job.");

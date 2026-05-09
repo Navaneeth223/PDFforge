@@ -19,5 +19,5 @@ async def rotate_pdf(
 
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-        job = process_rotate_job.delay(str(uuid.uuid4()), session_id, file_path, angle, pages)
+    job = process_rotate_job.delay(str(uuid.uuid4()), session_id, file_path, angle, pages)
     return JobResponse(job_id=job.id)

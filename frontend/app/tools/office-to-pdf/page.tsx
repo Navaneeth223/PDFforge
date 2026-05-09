@@ -22,7 +22,7 @@ export default function OfficeToPDFPage() {
       const formData = new FormData();
       formData.append("file", files[0]);
 
-      const res = await apiUpload.post("/tools/office-to-pdf", formData);
+      const res = await apiUpload.post("/office-to-pdf", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start conversion job.");

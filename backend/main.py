@@ -63,7 +63,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 
 # ─── Routers ──────────────────────────────────────────────────────────────────
-PREFIX = "/api/v1/tools"
+PREFIX = "/api/v1"
 
 app.include_router(merge.router,     prefix=PREFIX)
 app.include_router(split.router,     prefix=PREFIX)

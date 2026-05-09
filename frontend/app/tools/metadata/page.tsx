@@ -37,7 +37,7 @@ export default function MetadataToolPage() {
       if (creator) formData.append("creator", creator);
       if (producer) formData.append("producer", producer);
 
-      const res = await apiUpload.post("/tools/metadata", formData);
+      const res = await apiUpload.post("/metadata", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start metadata job.");

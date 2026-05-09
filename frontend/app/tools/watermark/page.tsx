@@ -53,7 +53,7 @@ export default function WatermarkToolPage() {
         formData.append("watermark_image", watermarkImage);
       }
 
-      const res = await apiUpload.post("/tools/watermark", formData);
+      const res = await apiUpload.post("/watermark", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start watermarking.");

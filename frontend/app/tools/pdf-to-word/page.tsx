@@ -22,7 +22,7 @@ export default function PDFToWordPage() {
       const formData = new FormData();
       formData.append("file", files[0]);
 
-      const res = await apiUpload.post("/tools/pdf-to-word", formData);
+      const res = await apiUpload.post("/pdf-to-word", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error("Failed to start conversion job.");

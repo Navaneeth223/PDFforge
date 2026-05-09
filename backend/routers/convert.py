@@ -31,7 +31,7 @@ async def pdf_to_images(
         raise HTTPException(status_code=422, detail="format must be 'jpeg' or 'png'.")
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-        job = process_pdf_to_images_job.delay(str(uuid.uuid4()), session_id, file_path, dpi, format)
+    job = process_pdf_to_images_job.delay(str(uuid.uuid4()), session_id, file_path, dpi, format)
     return JobResponse(job_id=job.id)
 
 
@@ -41,7 +41,7 @@ async def pdf_to_word(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail="Only PDF files are accepted.")
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-        job = process_pdf_to_word_job.delay(str(uuid.uuid4()), session_id, file_path)
+    job = process_pdf_to_word_job.delay(str(uuid.uuid4()), session_id, file_path)
     return JobResponse(job_id=job.id)
 
 
@@ -51,7 +51,7 @@ async def pdf_to_excel(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail="Only PDF files are accepted.")
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-        job = process_pdf_to_excel_job.delay(str(uuid.uuid4()), session_id, file_path)
+    job = process_pdf_to_excel_job.delay(str(uuid.uuid4()), session_id, file_path)
     return JobResponse(job_id=job.id)
 
 
@@ -61,7 +61,7 @@ async def pdf_to_text(file: UploadFile = File(...)):
         raise HTTPException(status_code=422, detail="Only PDF files are accepted.")
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-        job = process_pdf_to_text_job.delay(str(uuid.uuid4()), session_id, file_path)
+    job = process_pdf_to_text_job.delay(str(uuid.uuid4()), session_id, file_path)
     return JobResponse(job_id=job.id)
 
 
@@ -75,7 +75,7 @@ async def office_to_pdf(file: UploadFile = File(...)):
         )
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-        job = process_office_to_pdf_job.delay(str(uuid.uuid4()), session_id, file_path)
+    job = process_office_to_pdf_job.delay(str(uuid.uuid4()), session_id, file_path)
     return JobResponse(job_id=job.id)
 
 
@@ -92,7 +92,7 @@ async def images_to_pdf(
     saved = []
     for f in files:
         saved.append(await save_upload_file(f, session_id))
-        job = process_images_to_pdf_job.delay(str(uuid.uuid4()), session_id, saved, layout, page_size)
+    job = process_images_to_pdf_job.delay(str(uuid.uuid4()), session_id, saved, layout, page_size)
     return JobResponse(job_id=job.id)
 
 
@@ -104,5 +104,5 @@ async def html_to_pdf(
     if not html_content and not url:
         raise HTTPException(status_code=422, detail="Provide either html_content or url.")
     session_id = str(uuid.uuid4())
-        job = process_html_to_pdf_job.delay(str(uuid.uuid4()), session_id, html_content, url)
+    job = process_html_to_pdf_job.delay(str(uuid.uuid4()), session_id, html_content, url)
     return JobResponse(job_id=job.id)

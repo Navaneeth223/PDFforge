@@ -24,7 +24,7 @@ export default function CompressToolPage() {
       formData.append("file", files[0]);
       formData.append("level", level);
 
-      const res = await apiUpload.post("/tools/compress", formData);
+      const res = await apiUpload.post("/compress", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start compression job.");

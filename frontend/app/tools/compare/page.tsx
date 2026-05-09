@@ -25,7 +25,7 @@ export default function CompareToolPage() {
       formData.append("file_a", fileA);
       formData.append("file_b", fileB);
 
-      const res = await apiUpload.post("/tools/compare", formData);
+      const res = await apiUpload.post("/compare", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start comparison.");

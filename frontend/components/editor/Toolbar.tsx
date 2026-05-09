@@ -19,7 +19,7 @@ const TOOLS = [
 ];
 
 export default function Toolbar() {
-  const { activeTool, setTool } = useEditorStore();
+  const { activeTool, setTool, showGrid, toggleGrid } = useEditorStore();
 
   const handleToolClick = (toolId: ToolType) => {
     setTool(toolId);
@@ -71,16 +71,18 @@ export default function Toolbar() {
       text.selectAll();
       setTool('select');
     } else if (toolId === 'arrow') {
-      // Just a simple line for now, fabric arrows require custom drawing
-      const line = new fabric.Line([center.left - 50, center.top, center.left + 50, center.top], {
-        strokeWidth: 4,
-        fill: '#000000',
+      const arrowPath = "M 0 0 L 100 0 M 100 0 L 85 -10 M 100 0 L 85 10";
+      const arrow = new fabric.Path(arrowPath, {
+        left: center.left,
+        top: center.top,
         stroke: '#000000',
+        strokeWidth: 4,
+        fill: '',
         originX: 'center',
         originY: 'center',
       });
-      canvas.add(line);
-      canvas.setActiveObject(line);
+      canvas.add(arrow);
+      canvas.setActiveObject(arrow);
       setTool('select');
     } else if (toolId === 'image') {
       const input = document.createElement('input');
@@ -130,6 +132,23 @@ export default function Toolbar() {
           </span>
         </button>
       ))}
+
+      <div className="h-[1px] w-8 bg-white/5 my-2" />
+
+      <button
+        onClick={() => toggleGrid()}
+        className={`p-3 rounded-xl transition-all group relative ${
+          showGrid
+            ? "bg-emerald-500 text-white shadow-lg shadow-emerald-500/20"
+            : "text-zinc-500 hover:text-white hover:bg-white/5"
+        }`}
+        title="Toggle Grid"
+      >
+        <Grid3X3 className="w-5 h-5" />
+        <span className="absolute left-full ml-4 px-2 py-1 bg-zinc-800 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-white/5 z-50">
+          Toggle Grid
+        </span>
+      </button>
     </div>
   );
 }

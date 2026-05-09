@@ -22,7 +22,7 @@ export default function PDFToTextPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await apiUpload.post("/tools/pdf-to-text", formData);
+      const res = await apiUpload.post("/pdf-to-text", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start conversion.");

@@ -21,5 +21,5 @@ async def split_pdf(
 
     session_id = str(uuid.uuid4())
     file_path = await save_upload_file(file, session_id)
-        job = process_split_job.delay(str(uuid.uuid4()), session_id, file_path, mode, ranges, every_n, pages)
+    job = process_split_job.delay(str(uuid.uuid4()), session_id, file_path, mode, ranges, every_n, pages)
     return JobResponse(job_id=job.id)

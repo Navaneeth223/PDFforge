@@ -39,7 +39,7 @@ export default function NumberPagesToolPage() {
       formData.append("prefix", prefix);
       formData.append("suffix", suffix);
 
-      const res = await apiUpload.post("/tools/number-pages", formData);
+      const res = await apiUpload.post("/number-pages", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to add page numbers.");

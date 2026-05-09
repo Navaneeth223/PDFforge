@@ -28,7 +28,7 @@ export default function UnlockToolPage() {
       formData.append("file", file);
       formData.append("password", password);
 
-      const res = await apiUpload.post("/tools/unlock", formData);
+      const res = await apiUpload.post("/unlock", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to unlock PDF. Incorrect password?");

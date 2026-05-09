@@ -31,7 +31,7 @@ export default function ExtractPagesToolPage() {
       formData.append("file", file);
       formData.append("pages", selectedPages.sort((a,b) => a-b).join(","));
 
-      const res = await apiUpload.post("/tools/extract-pages", formData);
+      const res = await apiUpload.post("/extract-pages", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start extraction job.");

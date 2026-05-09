@@ -5,7 +5,10 @@ import {
   RotateCw, Copy, Globe, Table, Presentation,
   Images, Type, Stamp, Hash, Unlock,
   ScanText, ImagePlus, FileSearch, Wrench,
-  GitCompare, Crop, Briefcase, Search, X
+  GitCompare, Crop, Briefcase, Search, X,
+  FileDigit, FileJson, FileSpreadsheet,
+  MonitorPlay, Layout, ListOrdered, Sidebar,
+  Type as Font, Trash2
 } from "lucide-react";
 
 export const ALL_TOOLS = [
@@ -15,6 +18,11 @@ export const ALL_TOOLS = [
   { name: "Compress", desc: "Reduce file size without losing quality", icon: Minimize2, href: "/tools/compress", color: "text-purple-500", bg: "bg-purple-500/10", category: "PDF" },
   { name: "Sign PDF", desc: "Add electronic signatures", icon: PenTool, href: "/tools/sign", color: "text-yellow-500", bg: "bg-yellow-500/10", category: "PDF" },
   { name: "OCR PDF", desc: "Make scanned PDFs searchable", icon: ScanText, href: "/tools/ocr", color: "text-yellow-600", bg: "bg-yellow-600/10", category: "PDF" },
+  { name: "Rotate PDF", desc: "Rotate pages clockwise or counter-clockwise", icon: RotateCw, href: "/tools/rotate", color: "text-orange-500", bg: "bg-orange-500/10", category: "PDF" },
+  { name: "Watermark", desc: "Add text or image over pages", icon: Stamp, href: "/tools/watermark", color: "text-pink-600", bg: "bg-pink-600/10", category: "PDF" },
+  { name: "Number Pages", desc: "Add page numbers to your document", icon: ListOrdered, href: "/tools/number-pages", color: "text-blue-600", bg: "bg-blue-600/10", category: "PDF" },
+  { name: "Protect PDF", desc: "Encrypt with a strong password", icon: Lock, href: "/tools/protect", color: "text-red-500", bg: "bg-red-500/10", category: "PDF" },
+  { name: "Unlock PDF", desc: "Remove password protection", icon: Unlock, href: "/tools/unlock", color: "text-emerald-500", bg: "bg-emerald-500/10", category: "PDF" },
 
   // Word
   { name: "Word to PDF", desc: "Convert .docx to high-quality PDF", icon: FileText, href: "/tools/word/word-to-pdf", color: "text-blue-400", bg: "bg-blue-400/10", category: "Word" },
@@ -31,12 +39,17 @@ export const ALL_TOOLS = [
   { name: "PPT to PDF", desc: "Convert presentations to PDF", icon: Presentation, href: "/tools/ppt/ppt-to-pdf", color: "text-red-500", bg: "bg-red-500/10", category: "PowerPoint" },
   { name: "PPT to Images", desc: "Convert slides to high-res PNGs", icon: Images, href: "/tools/ppt/ppt-to-images", color: "text-rose-500", bg: "bg-rose-500/10", category: "PowerPoint" },
   { name: "PPT to Video", desc: "Convert slideshow to MP4 video", icon: Zap, href: "/tools/ppt/ppt-to-video", color: "text-amber-500", bg: "bg-amber-500/10", category: "PowerPoint" },
+  { name: "Merge PPT", desc: "Combine multiple .pptx files", icon: Copy, href: "/tools/ppt/merge-ppt", color: "text-orange-500", bg: "bg-orange-500/10", category: "PowerPoint" },
 
-  // Image
-  { name: "Images to PDF", desc: "Convert JPG/PNG to PDF format", icon: ImageIcon, href: "/tools/image/images-to-pdf", color: "text-pink-500", bg: "bg-pink-500/10", category: "Images" },
+  // Images
+  { name: "Images to PDF", desc: "Convert JPG/PNG to PDF format", icon: ImageIcon, href: "/tools/images-to-pdf", color: "text-pink-500", bg: "bg-pink-500/10", category: "Images" },
   { name: "Remove BG", desc: "AI-powered background removal", icon: Scissors, href: "/tools/image/remove-bg", color: "text-violet-500", bg: "bg-violet-500/10", category: "Images" },
   { name: "Resize Image", desc: "Change image dimensions", icon: Crop, href: "/tools/image/resize-image", color: "text-sky-500", bg: "bg-sky-500/10", category: "Images" },
+  { name: "Compress Image", desc: "Optimize images for web", icon: Minimize2, href: "/tools/image/compress-image", color: "text-indigo-500", bg: "bg-indigo-500/10", category: "Images" },
 
   // Convert
   { name: "Smart Converter", desc: "Convert anything to anything", icon: Zap, href: "/tools/convert", color: "text-yellow-400", bg: "bg-yellow-400/10", category: "Convert" },
+  { name: "PDF to Word", desc: "Convert PDF to editable Word document", icon: FileText, href: "/tools/pdf-to-word", color: "text-blue-500", bg: "bg-blue-500/10", category: "Convert" },
+  { name: "PDF to Excel", desc: "Convert PDF to spreadsheet", icon: Table, href: "/tools/pdf-to-excel", color: "text-green-500", bg: "bg-green-500/10", category: "Convert" },
+  { name: "PDF to PPT", desc: "Convert PDF to PowerPoint slides", icon: Presentation, href: "/tools/pdf-to-ppt", color: "text-red-500", bg: "bg-red-500/10", category: "Convert" },
 ];

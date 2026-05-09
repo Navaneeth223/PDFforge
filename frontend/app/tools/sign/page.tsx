@@ -37,7 +37,7 @@ export default function SignToolPage() {
       formData.append("x", x.toString());
       formData.append("y", y.toString());
 
-      const res = await apiUpload.post("/tools/sign", formData);
+      const res = await apiUpload.post("/sign", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start signing.");

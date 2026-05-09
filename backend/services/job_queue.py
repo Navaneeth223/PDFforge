@@ -16,8 +16,11 @@ celery_app = Celery(
     include=["services.job_queue"]
 )
 
+EAGER_MODE = os.getenv("CELERY_TASK_ALWAYS_EAGER", "true").lower() == "true"
+
 celery_app.conf.update(
-    task_always_eager=os.getenv("CELERY_TASK_ALWAYS_EAGER", "false").lower() == "true",
+    task_always_eager=EAGER_MODE,
+    task_eager_propagates=False,
     task_serializer="json",
     result_serializer="json",
     accept_content=["json"],
@@ -26,25 +29,43 @@ celery_app.conf.update(
     task_acks_late=True,
 )
 
+# In-memory job result store for eager/local mode (no Redis needed)
+_job_registry: Dict[str, Dict[str, Any]] = {}
+
+
+def _register_job(job_id: str, result: Dict[str, Any]):
+    """Store job result in memory for eager mode."""
+    _job_registry[job_id] = {"state": "SUCCESS", "progress": 100, **result}
+
 
 def _update(task, state: str, meta: Dict[str, Any]):
     task.update_state(state=state, meta=meta)
 
 
 def get_job_status(job_id: str) -> Dict[str, Any]:
-    """Query Celery backend for the status of a job."""
-    from celery.result import AsyncResult
-    result = AsyncResult(job_id, app=celery_app)
-    if result.state == "PENDING":
-        return {"state": "PENDING", "progress": 0, "message": "Job queued…"}
-    elif result.state == "PROGRESS":
-        return result.info or {"state": "PROGRESS", "progress": 0, "message": "Processing…"}
-    elif result.state == "SUCCESS":
-        info = result.info or {}
-        return {"state": "SUCCESS", "progress": 100, "output_path": info.get("output_path"), **info}
-    elif result.state == "FAILURE":
-        return {"state": "FAILURE", "progress": 0, "message": str(result.info)}
-    return {"state": result.state, "progress": 0, "message": ""}
+    """Query job status — checks in-memory registry first, then Celery backend."""
+    # Check local registry first (used in eager/no-Redis mode)
+    if job_id in _job_registry:
+        return _job_registry[job_id]
+
+    if not EAGER_MODE:
+        try:
+            from celery.result import AsyncResult
+            result = AsyncResult(job_id, app=celery_app)
+            if result.state == "PENDING":
+                return {"state": "PENDING", "progress": 0, "message": "Job queued…"}
+            elif result.state == "PROGRESS":
+                return result.info or {"state": "PROGRESS", "progress": 0, "message": "Processing…"}
+            elif result.state == "SUCCESS":
+                info = result.info or {}
+                return {"state": "SUCCESS", "progress": 100, "output_path": info.get("output_path"), **info}
+            elif result.state == "FAILURE":
+                return {"state": "FAILURE", "progress": 0, "message": str(result.info)}
+            return {"state": result.state, "progress": 0, "message": ""}
+        except Exception:
+            pass
+
+    return {"state": "PENDING", "progress": 0, "message": "Job queued…"}
 
 
 # ─── Merge ────────────────────────────────────────────────────────────────────
@@ -54,7 +75,9 @@ def process_merge_job(self, job_id: str, session_id: str, file_paths: List[str])
     from services.pdf_engine import merge_pdfs
     _update(self, "PROGRESS", {"progress": 10, "message": "Merging PDFs…"})
     out = merge_pdfs(session_id, file_paths)
-    return {"output_path": out, "progress": 100}
+    result = {"output_path": out, "progress": 100}
+    _register_job(job_id, result)
+    return result
 
 
 # ─── Split ────────────────────────────────────────────────────────────────────
@@ -66,7 +89,9 @@ def process_split_job(self, job_id: str, session_id: str, file_path: str,
     from services.pdf_engine import split_pdf
     _update(self, "PROGRESS", {"progress": 10, "message": "Splitting PDF…"})
     out = split_pdf(session_id, file_path, mode, ranges, every_n, pages)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Compress ─────────────────────────────────────────────────────────────────
@@ -77,7 +102,9 @@ def process_compress_job(self, job_id: str, session_id: str,
     from services.pdf_engine import compress_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": f"Compressing ({level} mode)…"})
     result = compress_pdf(session_id, file_path, level)
-    return {**result, "progress": 100}
+    _result = {**result, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Rotate ───────────────────────────────────────────────────────────────────
@@ -88,7 +115,9 @@ def process_rotate_job(self, job_id: str, session_id: str,
     from services.pdf_engine import rotate_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": f"Rotating pages by {angle}°…"})
     out = rotate_pdf(session_id, file_path, angle, pages)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Extract Pages ────────────────────────────────────────────────────────────
@@ -99,7 +128,9 @@ def process_extract_pages_job(self, job_id: str, session_id: str,
     from services.pdf_engine import extract_pages
     _update(self, "PROGRESS", {"progress": 20, "message": "Extracting pages…"})
     out = extract_pages(session_id, file_path, pages)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Extract Images ───────────────────────────────────────────────────────────
@@ -109,7 +140,9 @@ def process_extract_images_job(self, job_id: str, session_id: str, file_path: st
     from services.pdf_engine import extract_images
     _update(self, "PROGRESS", {"progress": 20, "message": "Extracting embedded images…"})
     out = extract_images(session_id, file_path)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Watermark ────────────────────────────────────────────────────────────────
@@ -123,7 +156,9 @@ def process_watermark_job(self, job_id: str, session_id: str, file_path: str,
     _update(self, "PROGRESS", {"progress": 20, "message": "Applying watermark…"})
     out = add_watermark(session_id, file_path, watermark_type, text,
                         wm_image_path, opacity, angle, position, font_size, color)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Protect ──────────────────────────────────────────────────────────────────
@@ -137,7 +172,9 @@ def process_protect_job(self, job_id: str, session_id: str, file_path: str,
     _update(self, "PROGRESS", {"progress": 20, "message": "Encrypting PDF…"})
     out = protect_pdf(session_id, file_path, user_password, owner_password,
                       allow_print, allow_copy, allow_edit, allow_annotate)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Unlock ───────────────────────────────────────────────────────────────────
@@ -148,7 +185,9 @@ def process_unlock_job(self, job_id: str, session_id: str,
     from services.pdf_engine import unlock_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": "Removing password…"})
     out = unlock_pdf(session_id, file_path, password)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── OCR ──────────────────────────────────────────────────────────────────────
@@ -159,7 +198,9 @@ def process_ocr_job(self, job_id: str, session_id: str,
     from services.converter import ocr_pdf
     _update(self, "PROGRESS", {"progress": 10, "message": "Rendering pages for OCR…"})
     out = ocr_pdf(session_id, file_path, language, dpi)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Convert: PDF → Images ────────────────────────────────────────────────────
@@ -170,7 +211,9 @@ def process_pdf_to_images_job(self, job_id: str, session_id: str,
     from services.pdf_engine import pdf_to_images
     _update(self, "PROGRESS", {"progress": 10, "message": "Converting pages to images…"})
     out = pdf_to_images(session_id, file_path, dpi, fmt)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Convert: PDF → Word ──────────────────────────────────────────────────────
@@ -180,7 +223,9 @@ def process_pdf_to_word_job(self, job_id: str, session_id: str, file_path: str):
     from services.converter import pdf_to_word
     _update(self, "PROGRESS", {"progress": 20, "message": "Extracting text to Word…"})
     out = pdf_to_word(session_id, file_path)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Convert: PDF → Excel ─────────────────────────────────────────────────────
@@ -190,7 +235,9 @@ def process_pdf_to_excel_job(self, job_id: str, session_id: str, file_path: str)
     from services.converter import pdf_to_excel
     _update(self, "PROGRESS", {"progress": 20, "message": "Detecting tables and exporting…"})
     out = pdf_to_excel(session_id, file_path)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Convert: PDF → Text ──────────────────────────────────────────────────────
@@ -200,7 +247,9 @@ def process_pdf_to_text_job(self, job_id: str, session_id: str, file_path: str):
     from services.pdf_engine import pdf_to_text
     _update(self, "PROGRESS", {"progress": 20, "message": "Extracting text…"})
     out = pdf_to_text(session_id, file_path)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Convert: Office → PDF ────────────────────────────────────────────────────
@@ -213,7 +262,9 @@ def process_office_to_pdf_job(self, job_id: str, session_id: str, file_path: str
     loop = asyncio.new_event_loop()
     out = loop.run_until_complete(office_to_pdf(session_id, file_path))
     loop.close()
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Convert: Images → PDF ────────────────────────────────────────────────────
@@ -224,7 +275,9 @@ def process_images_to_pdf_job(self, job_id: str, session_id: str,
     from services.pdf_engine import images_to_pdf
     _update(self, "PROGRESS", {"progress": 10, "message": "Building PDF from images…"})
     out = images_to_pdf(session_id, file_paths, layout, page_size)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Convert: HTML → PDF ─────────────────────────────────────────────────────
@@ -235,7 +288,9 @@ def process_html_to_pdf_job(self, job_id: str, session_id: str,
     from services.converter import html_to_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": "Rendering HTML to PDF…"})
     out = html_to_pdf(session_id, html_content, url)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Repair ───────────────────────────────────────────────────────────────────
@@ -245,7 +300,9 @@ def process_repair_job(self, job_id: str, session_id: str, file_path: str):
     from services.pdf_engine import repair_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": "Repairing PDF structure…"})
     out = repair_pdf(session_id, file_path)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Redact ───────────────────────────────────────────────────────────────────
@@ -256,7 +313,9 @@ def process_redact_job(self, job_id: str, session_id: str, file_path: str,
     from services.pdf_engine import redact_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": "Applying redactions…"})
     out = redact_pdf(session_id, file_path, search_terms, case_sensitive)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Sign ─────────────────────────────────────────────────────────────────────
@@ -270,7 +329,9 @@ def process_sign_job(self, job_id: str, session_id: str, file_path: str,
     _update(self, "PROGRESS", {"progress": 20, "message": "Placing signature…"})
     out = sign_pdf(session_id, file_path, sign_type, sig_path,
                    typed_text, page_number, x, y, width, height)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Metadata ─────────────────────────────────────────────────────────────────
@@ -283,7 +344,9 @@ def process_metadata_job(self, job_id: str, session_id: str, file_path: str,
     from services.pdf_engine import write_metadata
     _update(self, "PROGRESS", {"progress": 20, "message": "Writing metadata…"})
     out = write_metadata(session_id, file_path, title, author, subject, keywords, creator)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Number Pages ─────────────────────────────────────────────────────────────
@@ -296,7 +359,9 @@ def process_number_pages_job(self, job_id: str, session_id: str, file_path: str,
     _update(self, "PROGRESS", {"progress": 20, "message": "Stamping page numbers…"})
     out = add_page_numbers(session_id, file_path, h_align, v_align,
                            start_number, font_size, prefix, suffix)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Crop ─────────────────────────────────────────────────────────────────────
@@ -308,7 +373,9 @@ def process_crop_job(self, job_id: str, session_id: str, file_path: str,
     from services.pdf_engine import crop_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": "Cropping pages…"})
     out = crop_pdf(session_id, file_path, top, right, bottom, left, pages)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Compare ──────────────────────────────────────────────────────────────────
@@ -319,7 +386,9 @@ def process_compare_job(self, job_id: str, session_id: str,
     from services.pdf_engine import compare_pdfs
     _update(self, "PROGRESS", {"progress": 10, "message": "Rendering pages for comparison…"})
     out = compare_pdfs(session_id, path_a, path_b)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── PDF → PowerPoint ─────────────────────────────────────────────────────────
@@ -329,7 +398,9 @@ def process_pdf_to_ppt_job(self, job_id: str, session_id: str, file_path: str):
     from services.converter import pdf_to_ppt
     _update(self, "PROGRESS", {"progress": 10, "message": "Rendering PDF pages as slides…"})
     out = pdf_to_ppt(session_id, file_path)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Word Tools ───────────────────────────────────────────────────────────────
@@ -341,42 +412,54 @@ def process_word_to_pdf_job(self, job_id: str, session_id: str, file_path: str):
     loop = asyncio.new_event_loop()
     out = loop.run_until_complete(office_to_pdf(session_id, file_path))
     loop.close()
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.word_to_html")
 def process_word_to_html_job(self, job_id: str, session_id: str, file_path: str):
     from services.word_service import word_to_html
     _update(self, "PROGRESS", {"progress": 20, "message": "Converting Word to HTML…"})
     out = word_to_html(session_id, file_path)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.word_to_text")
 def process_word_to_text_job(self, job_id: str, session_id: str, file_path: str):
     from services.word_service import word_to_text
     _update(self, "PROGRESS", {"progress": 20, "message": "Extracting text from Word…"})
     out = word_to_text(session_id, file_path)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.merge_word")
 def process_merge_word_job(self, job_id: str, session_id: str, file_paths: List[str]):
     from services.word_service import merge_word_docs
     _update(self, "PROGRESS", {"progress": 20, "message": "Merging Word documents…"})
     out = merge_word_docs(session_id, file_paths)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.word_compress")
 def process_word_compress_job(self, job_id: str, session_id: str, file_path: str):
     from services.word_service import compress_word
     _update(self, "PROGRESS", {"progress": 20, "message": "Compressing Word file…"})
     out = compress_word(session_id, file_path)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.word_unlock")
 def process_word_unlock_job(self, job_id: str, session_id: str, file_path: str, password: str):
     from services.word_service import remove_word_password
     _update(self, "PROGRESS", {"progress": 20, "message": "Removing Word password…"})
     out = remove_word_password(session_id, file_path, password)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Excel Tools ──────────────────────────────────────────────────────────────
@@ -388,28 +471,36 @@ def process_excel_to_pdf_job(self, job_id: str, session_id: str, file_path: str)
     loop = asyncio.new_event_loop()
     out = loop.run_until_complete(office_to_pdf(session_id, file_path))
     loop.close()
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.excel_to_csv")
 def process_excel_to_csv_job(self, job_id: str, session_id: str, file_path: str):
     from services.excel_service import excel_to_csv
     _update(self, "PROGRESS", {"progress": 20, "message": "Converting Excel to CSV…"})
     out = excel_to_csv(session_id, file_path)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.excel_to_json")
 def process_excel_to_json_job(self, job_id: str, session_id: str, file_path: str):
     from services.excel_service import excel_to_json
     _update(self, "PROGRESS", {"progress": 20, "message": "Converting Excel to JSON…"})
     out = excel_to_json(session_id, file_path)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.merge_excel")
 def process_merge_excel_job(self, job_id: str, session_id: str, file_paths: List[str]):
     from services.excel_service import merge_excel_sheets
     _update(self, "PROGRESS", {"progress": 20, "message": "Merging Excel sheets…"})
     out = merge_excel_sheets(session_id, file_paths)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── PowerPoint Tools ─────────────────────────────────────────────────────────
@@ -421,7 +512,9 @@ def process_ppt_to_pdf_job(self, job_id: str, session_id: str, file_path: str):
     loop = asyncio.new_event_loop()
     out = loop.run_until_complete(office_to_pdf(session_id, file_path))
     loop.close()
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.ppt_to_images")
 def process_ppt_to_images_job(self, job_id: str, session_id: str, file_path: str):
@@ -430,7 +523,9 @@ def process_ppt_to_images_job(self, job_id: str, session_id: str, file_path: str
     loop = asyncio.new_event_loop()
     out = loop.run_until_complete(ppt_to_images(session_id, file_path))
     loop.close()
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.ppt_to_video")
 def process_ppt_to_video_job(self, job_id: str, session_id: str, file_path: str):
@@ -439,14 +534,18 @@ def process_ppt_to_video_job(self, job_id: str, session_id: str, file_path: str)
     loop = asyncio.new_event_loop()
     out = loop.run_until_complete(ppt_to_video(session_id, file_path))
     loop.close()
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.merge_ppt")
 def process_merge_ppt_job(self, job_id: str, session_id: str, file_paths: List[str]):
     from services.ppt_service import merge_presentations
     _update(self, "PROGRESS", {"progress": 20, "message": "Merging Presentations…"})
     out = merge_presentations(session_id, file_paths)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Image Tools ──────────────────────────────────────────────────────────────
@@ -456,35 +555,45 @@ def process_images_to_pdf_direct_job(self, job_id: str, session_id: str, file_pa
     from services.pdf_engine import images_to_pdf
     _update(self, "PROGRESS", {"progress": 10, "message": "Building PDF from images…"})
     out = images_to_pdf(session_id, file_paths, "fit", "A4")
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.image_compress")
 def process_image_compress_job(self, job_id: str, session_id: str, file_path: str):
     from services.image_service import compress_image
     _update(self, "PROGRESS", {"progress": 20, "message": "Compressing image…"})
     out = compress_image(session_id, file_path)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.image_convert")
 def process_image_convert_job(self, job_id: str, session_id: str, file_path: str, fmt: str):
     from services.image_service import convert_image
     _update(self, "PROGRESS", {"progress": 20, "message": f"Converting image to {fmt}…"})
     out = convert_image(session_id, file_path, fmt)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.image_resize")
 def process_image_resize_job(self, job_id: str, session_id: str, file_path: str, w: int, h: int):
     from services.image_service import resize_image
     _update(self, "PROGRESS", {"progress": 20, "message": "Resizing image…"})
     out = resize_image(session_id, file_path, w, h)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 @celery_app.task(bind=True, name="tasks.remove_bg")
 def process_remove_bg_job(self, job_id: str, session_id: str, file_path: str):
     from services.image_service import remove_background
     _update(self, "PROGRESS", {"progress": 10, "message": "Removing background with AI…"})
     out = remove_background(session_id, file_path)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result
 
 
 # ─── Editor Tools ─────────────────────────────────────────────────────────────
@@ -494,4 +603,6 @@ def process_editor_export_job(self, job_id: str, session_id: str, pages: List[Di
     from services.editor_service import export_editor_pdf
     _update(self, "PROGRESS", {"progress": 20, "message": "Flattening canvas and exporting PDF…"})
     out = export_editor_pdf(session_id, pages)
-    return {"output_path": out, "progress": 100}
+    _result = {"output_path": out, "progress": 100}
+    _register_job(job_id, _result)
+    return _result

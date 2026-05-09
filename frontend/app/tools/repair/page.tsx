@@ -22,7 +22,7 @@ export default function RepairToolPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await apiUpload.post("/tools/repair", formData);
+      const res = await apiUpload.post("/repair", formData);
       setJobId(res.data.job_id);
     } catch (err: any) {
       toast.error(err.response?.data?.detail || "Failed to start repair job.");
