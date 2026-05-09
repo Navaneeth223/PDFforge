@@ -1,16 +1,17 @@
-from fastapi import APIRouter, File, UploadFile, BackgroundTasks, Form, HTTPException
+from fastapi import APIRouter, File, UploadFile, Form, HTTPException
+from fastapi.responses import FileResponse
 from typing import List
 import uuid
-from models.schemas import JobResponse
+import os
+from config import settings
 from services.storage import save_upload_file
-from services.job_queue import process_merge_job, submit_job
+from services.pdf_engine import merge_pdfs
 
-router = APIRouter(tags=["Merge"])
+router = APIRouter()
 
-@router.post("/merge", response_model=JobResponse)
-async def merge_pdfs(
+@router.post("/merge")
+async def merge_pdfs_direct(
     files: List[UploadFile] = File(...),
-    background_tasks: BackgroundTasks = None
 ):
     if len(files) < 2:
         raise HTTPException(status_code=422, detail="At least 2 files are required for merging.")
@@ -18,13 +19,18 @@ async def merge_pdfs(
     session_id = str(uuid.uuid4())
     saved_files = []
     for file in files:
-        if not file.filename.endswith('.pdf'):
+        if not file.filename.lower().endswith('.pdf'):
             raise HTTPException(status_code=422, detail=f"File {file.filename} is not a PDF.")
         file_path = await save_upload_file(file, session_id)
         saved_files.append(file_path)
     
-    # Fire and forget job
-    job_id = str(uuid.uuid4())
-    submit_job(process_merge_job, job_id, session_id, saved_files)
-    
-    return JobResponse(job_id=job_id)
+    try:
+        out = merge_pdfs(session_id, saved_files)
+        return FileResponse(
+            path=out,
+            filename="merged_document.pdf",
+            media_type="application/pdf",
+            headers={"Content-Disposition": "attachment; filename=merged_document.pdf"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Merge failed: {str(e)}")

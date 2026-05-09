@@ -1,13 +1,15 @@
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
+from fastapi.responses import FileResponse
 import uuid
-from models.schemas import JobResponse
-from services.storage import save_upload_file
-from services.job_queue import process_compress_job, submit_job
+import os
+from config import settings
+from services.storage import save_upload_file, get_output_path
+from services.pdf_engine import compress_pdf
 
-router = APIRouter(tags=["Compress"])
+router = APIRouter()
 
-@router.post("/compress", response_model=JobResponse)
-async def compress_pdf(
+@router.post("/compress")
+async def compress_pdf_direct(
     file: UploadFile = File(...),
     level: str = Form("medium"),   # "low" | "medium" | "high"
 ):
@@ -17,7 +19,18 @@ async def compress_pdf(
         raise HTTPException(status_code=422, detail="level must be 'low', 'medium', or 'high'.")
 
     session_id = str(uuid.uuid4())
-    file_path = await save_upload_file(file, session_id)
-    job_id = str(uuid.uuid4())
-    submit_job(process_compress_job, job_id, session_id, file_path, level)
-    return JobResponse(job_id=job_id)
+    input_path = await save_upload_file(file, session_id)
+    
+    try:
+        # Run synchronous compression directly in the endpoint
+        result = compress_pdf(session_id, input_path, level)
+        output_path = result["output_path"]
+        
+        return FileResponse(
+            path=output_path,
+            filename=f"compressed_{file.filename}",
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=compressed_{file.filename}"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Compression failed: {str(e)}")

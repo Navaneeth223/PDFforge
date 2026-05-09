@@ -5,12 +5,13 @@ import { UniversalDropzone } from "@/components/dropzone/UniversalDropzone";
 import { JobProgress } from "@/components/progress/JobProgress";
 import { motion } from "framer-motion";
 import { Minimize2 } from "lucide-react";
-import { apiUpload } from "@/lib/api";
+import { pdfApi } from "@/lib/api";
+import { useToolSubmit } from "@/hooks/useToolSubmit";
 import { toast } from "sonner";
 
 export default function CompressToolPage() {
   const [files, setFiles] = useState<File[]>([]);
-  const [jobId, setJobId] = useState<string | null>(null);
+  const { state, progress, jobId, submit, reset } = useToolSubmit();
   const [level, setLevel] = useState<"low" | "medium" | "high">("medium");
 
   const handleStartCompress = async () => {
@@ -19,17 +20,10 @@ export default function CompressToolPage() {
       return;
     }
 
-    try {
-      const formData = new FormData();
-      formData.append("file", files[0]);
-      formData.append("level", level);
-
-      const res = await apiUpload.post("/compress", formData);
-      setJobId(res.data.job_id);
-    } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Failed to start compression job.");
-      console.error(err);
-    }
+    await submit(
+      () => pdfApi.compress(files[0], level),
+      `compressed_${files[0].name}`
+    );
   };
 
   return (
@@ -51,7 +45,7 @@ export default function CompressToolPage() {
           </p>
         </div>
 
-        {!jobId ? (
+        {state === 'idle' ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -114,9 +108,11 @@ export default function CompressToolPage() {
             <JobProgress
               jobId={jobId}
               onReset={() => {
-                setJobId(null);
+                reset();
                 setFiles([]);
               }}
+              customProgress={jobId ? undefined : progress}
+              status={state === 'processing' ? 'Processing...' : 'Uploading...'}
             />
           </motion.div>
         )}

@@ -1,19 +1,27 @@
 from pydantic_settings import BaseSettings
 from typing import List
 import os
+import tempfile
 
 class Settings(BaseSettings):
-    max_file_size_mb: int = 100
-    file_retention_minutes: int = 60
-    redis_url: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-    allowed_origins: str = "http://localhost:3000"
-    secret_key: str = "super-secret-key-change-in-production"
+    # API
+    SECRET_KEY: str = "docxio-dev-secret-key"
+    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
 
+    # Files
+    TEMP_DIR: str = os.path.join(tempfile.gettempdir(), "docxio")
+    MAX_FILE_SIZE_MB: int = 100
+    FILE_RETENTION_MINUTES: int = 60
+
+    # Redis
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    
     @property
-    def get_allowed_origins(self) -> List[str]:
-        return [origin.strip() for origin in self.allowed_origins.split(",")]
+    def redis_url(self) -> str:
+        return self.REDIS_URL
 
     class Config:
         env_file = ".env"
+        env_file_encoding = "utf-8"
 
 settings = Settings()

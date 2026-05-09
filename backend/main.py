@@ -1,103 +1,67 @@
-"""
-main.py — FastAPI application entrypoint.
-"""
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import os
 import asyncio
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from config import settings
-from utils.temp_manager import cleanup_loop
 from routers import (
-    merge, split, compress, rotate,
-    watermark, protect, unlock, ocr,
-    convert, extract, repair, redact,
-    sign, metadata, jobs,
-    number_pages, crop, compare, pdf_to_ppt,
-    word, excel, ppt, image, editor,
+    merge, split, compress, rotate, watermark, protect, unlock,
+    extract, ocr, page_numbers, jobs, convert, word, excel, ppt, image, editor
 )
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Start background file-cleanup task on startup
-    task = asyncio.create_task(cleanup_loop())
+    # Startup: create temp directory
+    os.makedirs(settings.TEMP_DIR, exist_ok=True)
     yield
-    task.cancel()
-
+    # Shutdown logic if needed
 
 app = FastAPI(
     title="Docxio API",
-    description="Production-grade document tools — free, open-source, self-hostable.",
     version="1.0.0",
-    docs_url="/api/docs",
-    redoc_url="/api/redoc",
+    description="Universal Document Toolkit API",
     lifespan=lifespan,
 )
 
-# ─── CORS ─────────────────────────────────────────────────────────────────────
+# ─── CORS ────────────────────────────────────────────────────────
+# In dev, we allow everything from localhost:3000
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.get_allowed_origins,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# ─── Routes ──────────────────────────────────────────────────────
+# Adopting the user's requested /api/v1/pdf prefix for PDF tools
+PREFIX = "/api/v1/pdf"
 
-# ─── Global exception handler ─────────────────────────────────────────────────
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    return JSONResponse(
-        status_code=500,
-        content={
-            "success": False,
-            "error": {
-                "code": "INTERNAL_ERROR",
-                "message": "An unexpected error occurred. Please try again.",
-                "details": str(exc),
-            },
-        },
-    )
+app.include_router(merge.router,        prefix=PREFIX,  tags=["PDF"])
+app.include_router(split.router,        prefix=PREFIX,  tags=["PDF"])
+app.include_router(compress.router,     prefix=PREFIX,  tags=["PDF"])
+app.include_router(rotate.router,       prefix=PREFIX,  tags=["PDF"])
+app.include_router(watermark.router,    prefix=PREFIX,  tags=["PDF"])
+app.include_router(protect.router,      prefix=PREFIX,  tags=["PDF"])
+app.include_router(unlock.router,       prefix=PREFIX,  tags=["PDF"])
+app.include_router(extract.router,      prefix=PREFIX,  tags=["PDF"])
+app.include_router(ocr.router,          prefix=PREFIX,  tags=["PDF"])
+app.include_router(page_numbers.router, prefix=PREFIX,  tags=["PDF"])
 
+# Other categories
+app.include_router(convert.router, prefix="/api/v1", tags=["Smart Convert"])
+app.include_router(word.router,    prefix="/api/v1", tags=["Word"])
+app.include_router(excel.router,   prefix="/api/v1", tags=["Excel"])
+app.include_router(ppt.router,     prefix="/api/v1", tags=["PowerPoint"])
+app.include_router(image.router,   prefix="/api/v1", tags=["Image"])
+app.include_router(editor.router,  prefix="/api/v1", tags=["Editor"])
+app.include_router(jobs.router,    prefix="/api/v1", tags=["Jobs"])
 
-# ─── Routers ──────────────────────────────────────────────────────────────────
-PREFIX = "/api/v1"
-
-app.include_router(merge.router,     prefix=PREFIX)
-app.include_router(split.router,     prefix=PREFIX)
-app.include_router(compress.router,  prefix=PREFIX)
-app.include_router(rotate.router,    prefix=PREFIX)
-app.include_router(watermark.router, prefix=PREFIX)
-app.include_router(protect.router,   prefix=PREFIX)
-app.include_router(unlock.router,    prefix=PREFIX)
-app.include_router(ocr.router,       prefix=PREFIX)
-app.include_router(convert.router,   prefix=PREFIX)
-app.include_router(extract.router,   prefix=PREFIX)
-app.include_router(repair.router,    prefix=PREFIX)
-app.include_router(redact.router,    prefix=PREFIX)
-app.include_router(sign.router,      prefix=PREFIX)
-app.include_router(metadata.router,    prefix=PREFIX)
-app.include_router(number_pages.router,prefix=PREFIX)
-app.include_router(crop.router,        prefix=PREFIX)
-app.include_router(compare.router,     prefix=PREFIX)
-app.include_router(pdf_to_ppt.router,  prefix=PREFIX)
-
-# New document tools
-app.include_router(word.router,  prefix=PREFIX)
-app.include_router(excel.router, prefix=PREFIX)
-app.include_router(ppt.router,   prefix=PREFIX)
-app.include_router(image.router, prefix=PREFIX)
-
-# Editor router uses /api/v1 prefix
-app.include_router(editor.router, prefix="/api/v1")
-
-# Jobs router uses /api/v1 prefix (not /tools)
-app.include_router(jobs.router, prefix="/api/v1")
-
-
-# ─── Health check ─────────────────────────────────────────────────────────────
-@app.get("/health", tags=["Health"])
+@app.get("/health")
 async def health_check():
-    return {"status": "ok", "version": "1.0.0"}
+    return {"status": "ok", "service": "docxio-api"}
+
+@app.get("/")
+async def root():
+    return {"message": "Docxio API is running. Visit /docs for documentation."}

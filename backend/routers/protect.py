@@ -1,31 +1,31 @@
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException
-from typing import Optional
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi.responses import FileResponse
 import uuid
-from models.schemas import JobResponse
+import os
+from config import settings
 from services.storage import save_upload_file
-from services.job_queue import process_protect_job
+from services.pdf_engine import protect_pdf
 
-router = APIRouter(tags=["Protect"])
+router = APIRouter()
 
-@router.post("/protect", response_model=JobResponse)
-async def protect_pdf(
+@router.post("/protect")
+async def protect_pdf_direct(
     file: UploadFile = File(...),
-    user_password: str = Form(...),
-    owner_password: Optional[str] = Form(None),
-    allow_print: bool = Form(True),
-    allow_copy: bool = Form(True),
-    allow_edit: bool = Form(False),
-    allow_annotate: bool = Form(False),
+    password: str = Form(...),
 ):
-    if not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=422, detail="Only PDF files are accepted.")
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=422, detail="File must be a PDF")
 
     session_id = str(uuid.uuid4())
-    file_path = await save_upload_file(file, session_id)
-    job_id = str(uuid.uuid4())
-    process_protect_job.delay(
-        job_id, session_id, file_path,
-        user_password, owner_password or user_password,
-        allow_print, allow_copy, allow_edit, allow_annotate
-    )
-    return JobResponse(job_id=job.id)
+    input_path = await save_upload_file(file, session_id)
+
+    try:
+        out = protect_pdf(session_id, input_path, password, password, True, True, True, True)
+        return FileResponse(
+            path=out,
+            filename=f"protected_{file.filename}",
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=protected_{file.filename}"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Protect failed: {str(e)}")

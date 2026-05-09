@@ -5,12 +5,13 @@ import { UniversalDropzone } from "@/components/dropzone/UniversalDropzone";
 import { JobProgress } from "@/components/progress/JobProgress";
 import { motion } from "framer-motion";
 import { Scissors } from "lucide-react";
-import { apiUpload } from "@/lib/api";
+import { pdfApi } from "@/lib/api";
+import { useToolSubmit } from "@/hooks/useToolSubmit";
 import { toast } from "sonner";
 
 export default function SplitToolPage() {
   const [files, setFiles] = useState<File[]>([]);
-  const [jobId, setJobId] = useState<string | null>(null);
+  const { state, progress, jobId, submit, reset } = useToolSubmit();
 
   const [mode, setMode] = useState<"ranges" | "every_n" | "pages">("ranges");
   const [ranges, setRanges] = useState("");
@@ -23,20 +24,10 @@ export default function SplitToolPage() {
       return;
     }
 
-    try {
-      const formData = new FormData();
-      formData.append("file", files[0]);
-      formData.append("mode", mode);
-      if (mode === "ranges") formData.append("ranges", ranges);
-      if (mode === "every_n") formData.append("every_n", everyN);
-      if (mode === "pages") formData.append("pages", pages);
-
-      const res = await apiUpload.post("/split", formData);
-      setJobId(res.data.job_id);
-    } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Failed to start split job.");
-      console.error(err);
-    }
+    await submit(
+      () => pdfApi.split(files[0], mode, mode === "ranges" ? ranges : mode === "every_n" ? everyN : pages),
+      `split_${files[0].name}`
+    );
   };
 
   return (
@@ -58,7 +49,7 @@ export default function SplitToolPage() {
           </p>
         </div>
 
-        {!jobId ? (
+        {state === 'idle' ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -155,9 +146,11 @@ export default function SplitToolPage() {
             <JobProgress
               jobId={jobId}
               onReset={() => {
-                setJobId(null);
+                reset();
                 setFiles([]);
               }}
+              customProgress={jobId ? undefined : progress}
+              status={state === 'processing' ? 'Processing...' : 'Uploading...'}
             />
           </motion.div>
         )}

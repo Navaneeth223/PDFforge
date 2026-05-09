@@ -7,41 +7,30 @@ import { SettingsPanel } from "@/components/layout/SettingsPanel";
 import { Toolbar } from "@/components/toolbar/Toolbar";
 import { PDFPageThumbnails } from "@/components/pdf-viewer/PDFPageThumbnails";
 import { motion } from "framer-motion";
-import { RefreshCw, RotateCw, RotateCcw } from "lucide-react";
-import { apiUpload } from "@/lib/api";
+import { RefreshCw, RotateCw, RotateCcw, AlertCircle, Loader2 } from "lucide-react";
+import { pdfApi } from "@/lib/api";
+import { useToolSubmit } from "@/hooks/useToolSubmit";
 import { toast } from "sonner";
 
 export default function RotateToolPage() {
   const [file, setFile] = useState<File | null>(null);
-  const [jobId, setJobId] = useState<string | null>(null);
+  const { state, progress, jobId, submit, reset } = useToolSubmit();
   
   const [rotation, setRotation] = useState<number>(90);
   const [selectedPages, setSelectedPages] = useState<number[]>([]);
   const [mode, setMode] = useState<"all" | "selected">("all");
 
   const handleStartRotate = async () => {
-    if (!file) {
-      toast.error("Please upload a PDF to rotate.");
-      return;
-    }
+    if (!file) return;
 
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("angle", rotation.toString());
-      
-      if (mode === "all" || selectedPages.length === 0) {
-        formData.append("pages", "all");
-      } else {
-        formData.append("pages", selectedPages.join(","));
-      }
+    const pages = (mode === "all" || selectedPages.length === 0) 
+      ? "all" 
+      : selectedPages.join(",");
 
-      const res = await apiUpload.post("/rotate", formData);
-      setJobId(res.data.job_id);
-    } catch (err: any) {
-      toast.error(err.response?.data?.detail || "Failed to start rotation job.");
-      console.error(err);
-    }
+    await submit(
+      () => pdfApi.rotate(file, rotation, pages),
+      `rotated_${file.name}`
+    );
   };
 
   if (!file) {
@@ -71,10 +60,15 @@ export default function RotateToolPage() {
     );
   }
 
-  if (jobId) {
+  if (state !== 'idle') {
     return (
-      <div className="min-h-screen bg-background pt-24 pb-12 flex items-center justify-center">
-        <JobProgress jobId={jobId} onReset={() => { setJobId(null); setFile(null); }} />
+      <div className="min-h-screen bg-background pt-24 pb-12 flex flex-col items-center justify-center space-y-8">
+        <JobProgress 
+          jobId={jobId} 
+          onReset={() => { reset(); setFile(null); }} 
+          customProgress={jobId ? undefined : progress}
+          status={state === 'processing' ? 'Processing...' : 'Uploading...'}
+        />
       </div>
     );
   }

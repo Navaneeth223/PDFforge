@@ -13,19 +13,23 @@ interface JobStatus {
 }
 
 interface JobProgressProps {
-  jobId: string;
+  jobId?: string | null;
   onComplete?: () => void;
   onReset?: () => void;
+  customProgress?: number;
+  status?: string;
 }
 
-export function JobProgress({ jobId, onComplete, onReset }: JobProgressProps) {
+export function JobProgress({ jobId, onComplete, onReset, customProgress, status: customStatus }: JobProgressProps) {
   const [status, setStatus] = useState<JobStatus>({
     state: "PENDING",
-    progress: 0,
-    message: "Initializing...",
+    progress: customProgress || 0,
+    message: customStatus || "Initializing...",
   });
 
   useEffect(() => {
+    if (!jobId) return;
+
     const eventSource = new EventSource(
       `${getBaseUrl()}/api/v1/jobs/${jobId}/status`
     );
@@ -52,7 +56,7 @@ export function JobProgress({ jobId, onComplete, onReset }: JobProgressProps) {
       setStatus((prev) => ({
         ...prev,
         state: "FAILURE",
-        message: "Lost connection to server.",
+        message: "Lost connection to server. Please try again.",
       }));
     };
 
@@ -61,41 +65,57 @@ export function JobProgress({ jobId, onComplete, onReset }: JobProgressProps) {
     };
   }, [jobId, onComplete]);
 
+  // Update status message if custom props change and no jobId
+  useEffect(() => {
+    if (!jobId && (customProgress !== undefined || customStatus !== undefined)) {
+      setStatus(prev => ({
+        ...prev,
+        progress: customProgress ?? prev.progress,
+        message: customStatus ?? prev.message
+      }));
+    }
+  }, [jobId, customProgress, customStatus]);
+
   const handleDownload = () => {
+    if (!jobId) return;
     const url = `${getBaseUrl()}/api/v1/jobs/${jobId}/download`;
-    // Create a temporary link to download the file
     const link = document.createElement("a");
     link.href = url;
-    link.download = `result_${jobId}`;
+    link.download = `result_${jobId}.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
+  const currentState = jobId ? status.state : "PROGRESS";
+  const currentProgress = jobId ? status.progress : (customProgress ?? status.progress);
+  const currentMessage = jobId ? status.message : (customStatus ?? status.message);
+
   return (
-    <div className="w-full max-w-xl mx-auto rounded-2xl glass p-8">
+    <div className="w-full max-w-xl mx-auto rounded-2xl glass p-8 shadow-2xl">
       <div className="flex flex-col items-center justify-center text-center space-y-6">
-        {status.state === "PENDING" || status.state === "PROGRESS" ? (
+        {currentState === "PENDING" || currentState === "PROGRESS" ? (
           <>
             <div className="relative flex items-center justify-center">
               <Loader2 className="w-16 h-16 text-indigo-500 animate-spin" />
-              <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
-                {status.progress}%
+              <div className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+                {Math.round(currentProgress)}%
               </div>
             </div>
             <div>
               <h3 className="text-xl font-bold text-white mb-2">Processing Document</h3>
-              <p className="text-sm text-zinc-400">{status.message || "Please wait..."}</p>
+              <p className="text-sm text-zinc-400">{currentMessage || "Please wait..."}</p>
             </div>
-            <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-white/5 rounded-full h-2 overflow-hidden border border-white/5">
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${status.progress}%` }}
-                className="h-full bg-indigo-500 rounded-full"
+                animate={{ width: `${currentProgress}%` }}
+                transition={{ type: "spring", bounce: 0, duration: 0.5 }}
+                className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
               />
             </div>
           </>
-        ) : status.state === "SUCCESS" ? (
+        ) : currentState === "SUCCESS" ? (
           <>
             <motion.div
               initial={{ scale: 0 }}
@@ -131,10 +151,12 @@ export function JobProgress({ jobId, onComplete, onReset }: JobProgressProps) {
             </motion.div>
             <div>
               <h3 className="text-xl font-bold text-white mb-2">Processing Failed</h3>
-              <p className="text-sm text-zinc-400">{status.message || "An unknown error occurred."}</p>
+              <p className="text-sm text-red-400/80 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                {status.message || "An unknown error occurred during processing."}
+              </p>
             </div>
             {onReset && (
-              <button onClick={onReset} className="btn-ghost mt-4 w-full">
+              <button onClick={onReset} className="btn-primary mt-4 w-full bg-zinc-800 hover:bg-zinc-700">
                 Try Again
               </button>
             )}

@@ -6,6 +6,7 @@ import { JobProgress } from "@/components/progress/JobProgress";
 import { motion } from "framer-motion";
 import { LucideIcon } from "lucide-react";
 import { apiUpload } from "@/lib/api";
+import { useToolSubmit } from "@/hooks/useToolSubmit";
 import { toast } from "sonner";
 
 interface ToolPageProps {
@@ -34,8 +35,7 @@ export function ToolPage({
   renderOptions
 }: ToolPageProps) {
   const [files, setFiles] = useState<File[]>([]);
-  const [jobId, setJobId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { state, progress, jobId, submit, reset } = useToolSubmit();
 
   const handleStart = async () => {
     if (files.length === 0) {
@@ -43,27 +43,21 @@ export function ToolPage({
       return;
     }
 
-    setLoading(true);
-    try {
-      const formData = new FormData();
-      if (multiple) {
-        files.forEach((file) => formData.append("files", file));
-      } else {
-        formData.append("file", files[0]);
-      }
-
-      if (extraFields) {
-        extraFields(formData);
-      }
-
-      const res = await apiUpload.post(endpoint, formData);
-      setJobId(res.data.job_id);
-    } catch (err) {
-      toast.error("Failed to start job.");
-      console.error(err);
-    } finally {
-      setLoading(false);
+    const formData = new FormData();
+    if (multiple) {
+      files.forEach((file) => formData.append("files", file));
+    } else {
+      formData.append("file", files[0]);
     }
+
+    if (extraFields) {
+      extraFields(formData);
+    }
+
+    await submit(
+      () => apiUpload(endpoint, formData),
+      `processed_${files[0].name}`
+    );
   };
 
   return (
@@ -86,7 +80,7 @@ export function ToolPage({
           </p>
         </div>
 
-        {!jobId ? (
+        {state === 'idle' ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -110,10 +104,9 @@ export function ToolPage({
               <div className="flex justify-center mt-12">
                 <button 
                   onClick={handleStart} 
-                  disabled={loading}
                   className="btn-primary px-12 py-4 text-lg shadow-2xl shadow-indigo-500/20"
                 >
-                  {loading ? "Processing..." : buttonText}
+                  {buttonText}
                 </button>
               </div>
             )}
@@ -122,9 +115,11 @@ export function ToolPage({
           <JobProgress
             jobId={jobId}
             onReset={() => {
-              setJobId(null);
+              reset();
               setFiles([]);
             }}
+            customProgress={jobId ? undefined : progress}
+            status={state === 'processing' ? 'Processing...' : 'Uploading...'}
           />
         )}
       </div>

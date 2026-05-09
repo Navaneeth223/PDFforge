@@ -1,41 +1,41 @@
-from fastapi import APIRouter, File, UploadFile, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi.responses import FileResponse
 from typing import Optional
 import uuid
-from models.schemas import JobResponse
+import os
+from config import settings
 from services.storage import save_upload_file
-from services.job_queue import process_watermark_job
+from services.pdf_engine import add_watermark
 
-router = APIRouter(tags=["Watermark"])
+router = APIRouter()
 
-@router.post("/watermark", response_model=JobResponse)
-async def add_watermark(
+@router.post("/watermark")
+async def watermark_pdf_direct(
     file: UploadFile = File(...),
-    watermark_type: str = Form("text"),        # "text" | "image"
+    watermark_type: str = Form("text"), # "text" | "image"
     text: Optional[str] = Form(None),
-    watermark_image: Optional[UploadFile] = File(None),
-    opacity: float = Form(0.3),
+    opacity: float = Form(0.5),
     angle: float = Form(45.0),
-    position: str = Form("center"),            # "center" | "tile" | "top-left" | "top-right" | "bottom-left" | "bottom-right"
-    font_size: int = Form(48),
-    color: str = Form("#808080"),
+    position: str = Form("center"),
+    font_size: int = Form(50),
+    color: str = Form("#888888"),
 ):
-    if not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=422, detail="Only PDF files are accepted.")
-    if watermark_type == "text" and not text:
-        raise HTTPException(status_code=422, detail="text is required for text watermark.")
-    if not (0.0 <= opacity <= 1.0):
-        raise HTTPException(status_code=422, detail="opacity must be between 0.0 and 1.0.")
+    if not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=422, detail="File must be a PDF")
 
     session_id = str(uuid.uuid4())
-    file_path = await save_upload_file(file, session_id)
-    wm_image_path = None
-    if watermark_image:
-        wm_image_path = await save_upload_file(watermark_image, session_id)
+    input_path = await save_upload_file(file, session_id)
 
-    job_id = str(uuid.uuid4())
-    process_watermark_job.delay(
-        job_id, session_id, file_path,
-        watermark_type, text, wm_image_path,
-        opacity, angle, position, font_size, color
-    )
-    return JobResponse(job_id=job.id)
+    try:
+        out = add_watermark(
+            session_id, input_path, watermark_type, text, 
+            None, opacity, angle, position, font_size, color
+        )
+        return FileResponse(
+            path=out,
+            filename=f"watermarked_{file.filename}",
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=watermarked_{file.filename}"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Watermark failed: {str(e)}")
