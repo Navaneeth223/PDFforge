@@ -432,6 +432,15 @@ def process_ppt_to_images_job(self, job_id: str, session_id: str, file_path: str
     loop.close()
     return {"output_path": out, "progress": 100}
 
+@celery_app.task(bind=True, name="tasks.ppt_to_video")
+def process_ppt_to_video_job(self, job_id: str, session_id: str, file_path: str):
+    from services.ppt_service import ppt_to_video
+    _update(self, "PROGRESS", {"progress": 10, "message": "Converting PPT to video (this may take a while)…"})
+    loop = asyncio.new_event_loop()
+    out = loop.run_until_complete(ppt_to_video(session_id, file_path))
+    loop.close()
+    return {"output_path": out, "progress": 100}
+
 @celery_app.task(bind=True, name="tasks.merge_ppt")
 def process_merge_ppt_job(self, job_id: str, session_id: str, file_paths: List[str]):
     from services.ppt_service import merge_presentations

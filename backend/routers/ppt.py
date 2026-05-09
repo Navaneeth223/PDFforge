@@ -5,6 +5,7 @@ from services.storage import save_upload_file
 from services.job_queue import (
     process_ppt_to_pdf_job,
     process_ppt_to_images_job,
+    process_ppt_to_video_job,
     process_merge_ppt_job
 )
 
@@ -26,6 +27,15 @@ async def ppt_to_images(
 ):
     path = await save_upload_file(file, x_session_id)
     job = process_ppt_to_images_job.delay(str(uuid.uuid4()), x_session_id, path)
+    return {"job_id": job.id, "session_id": x_session_id}
+
+@router.post("/to-video")
+async def ppt_to_video(
+    file: UploadFile = File(...),
+    x_session_id: str = Header(default_factory=lambda: str(uuid.uuid4()))
+):
+    path = await save_upload_file(file, x_session_id)
+    job = process_ppt_to_video_job.delay(str(uuid.uuid4()), x_session_id, path)
     return {"job_id": job.id, "session_id": x_session_id}
 
 @router.post("/merge")

@@ -25,11 +25,44 @@ def merge_presentations(session_id: str, file_paths: List[str]) -> str:
 
 async def ppt_to_images(session_id: str, file_path: str) -> str:
     """Convert PPT to ZIP of PNGs using LibreOffice."""
-    session_dir = get_session_dir(session_id)
-    # This is similar to office_to_pdf but we'd need to convert to images.
-    # LibreOffice can convert to pdf first, then we use fitz to get images.
     from services.converter import office_to_pdf
     pdf_path = await office_to_pdf(session_id, file_path)
     from services.pdf_engine import pdf_to_images
     zip_path = pdf_to_images(session_id, pdf_path, dpi=150, fmt="png")
     return zip_path
+
+async def ppt_to_video(session_id: str, file_path: str) -> str:
+    """Convert PPT slides to MP4 video."""
+    import ffmpeg
+    import fitz
+    import shutil
+    
+    # 1. PPT -> PDF
+    from services.converter import office_to_pdf
+    pdf_path = await office_to_pdf(session_id, file_path)
+    
+    # 2. PDF -> Temp Images
+    session_dir = get_session_dir(session_id)
+    temp_img_dir = os.path.join(session_dir, "video_frames")
+    os.makedirs(temp_img_dir, exist_ok=True)
+    
+    doc = fitz.open(pdf_path)
+    for i, page in enumerate(doc):
+        pix = page.get_pixmap(dpi=150)
+        pix.save(os.path.join(temp_img_dir, f"frame_{i:04d}.png"))
+    doc.close()
+    
+    # 3. Images -> MP4 (ffmpeg)
+    output_path = get_output_path(session_id, ".mp4")
+    (
+        ffmpeg
+        .input(os.path.join(temp_img_dir, "frame_%04d.png"), framerate=0.5) # 2 seconds per slide
+        .output(output_path, vcodec='libx264', pix_fmt='yuv420p')
+        .overwrite_output()
+        .run(quiet=True)
+    )
+    
+    # Cleanup temp frames
+    shutil.rmtree(temp_img_dir, ignore_errors=True)
+    
+    return output_path
