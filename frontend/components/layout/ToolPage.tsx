@@ -94,7 +94,7 @@ export function ToolPage({
           >
             <UniversalDropzone
               onFilesAccepted={setFiles}
-              multiple={multiple}
+              maxFiles={multiple ? 0 : 1}
               title={files.length > 0 ? (multiple ? `${files.length} files selected` : files[0].name) : `Upload files for ${title}`}
               subtitle={`Drag & drop or click to browse. Supported: ${Object.values(accept).flat().join(", ")}`}
               accept={accept}

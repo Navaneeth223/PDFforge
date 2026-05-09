@@ -137,7 +137,7 @@ export default function SmartConverterPage() {
           <div className="space-y-8">
             <UniversalDropzone
               onFilesAccepted={(files) => setFile(files[0])}
-              multiple={false}
+              maxFiles={1}
               title={file ? file.name : "Drop any document or image"}
               subtitle={file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : "PDF, Word, Excel, PPT, PNG, JPG..."}
             />
