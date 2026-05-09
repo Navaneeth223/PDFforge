@@ -7,7 +7,8 @@ from services.job_queue import (
     process_image_compress_job,
     process_image_convert_job,
     process_image_resize_job,
-    process_remove_bg_job
+    process_remove_bg_job,
+    submit_job
 )
 
 router = APIRouter(prefix="/image", tags=["Image Tools"])
@@ -20,8 +21,9 @@ async def images_to_pdf(
     paths = []
     for file in files:
         paths.append(await save_upload_file(file, x_session_id))
-    job = process_images_to_pdf_direct_job.delay(str(uuid.uuid4()), x_session_id, paths)
-    return {"job_id": job.id, "session_id": x_session_id}
+    job_id = str(uuid.uuid4())
+    submit_job(process_images_to_pdf_direct_job, job_id, x_session_id, paths)
+    return {"job_id": job_id, "session_id": x_session_id}
 
 @router.post("/compress")
 async def image_compress(
@@ -29,8 +31,9 @@ async def image_compress(
     x_session_id: str = Header(default_factory=lambda: str(uuid.uuid4()))
 ):
     path = await save_upload_file(file, x_session_id)
-    job = process_image_compress_job.delay(str(uuid.uuid4()), x_session_id, path)
-    return {"job_id": job.id, "session_id": x_session_id}
+    job_id = str(uuid.uuid4())
+    submit_job(process_image_compress_job, job_id, x_session_id, path)
+    return {"job_id": job_id, "session_id": x_session_id}
 
 @router.post("/convert")
 async def image_convert(
@@ -39,8 +42,9 @@ async def image_convert(
     x_session_id: str = Header(default_factory=lambda: str(uuid.uuid4()))
 ):
     path = await save_upload_file(file, x_session_id)
-    job = process_image_convert_job.delay(str(uuid.uuid4()), x_session_id, path, target_format)
-    return {"job_id": job.id, "session_id": x_session_id}
+    job_id = str(uuid.uuid4())
+    submit_job(process_image_convert_job, job_id, x_session_id, path, target_format)
+    return {"job_id": job_id, "session_id": x_session_id}
 
 @router.post("/resize")
 async def image_resize(
@@ -50,8 +54,9 @@ async def image_resize(
     x_session_id: str = Header(default_factory=lambda: str(uuid.uuid4()))
 ):
     path = await save_upload_file(file, x_session_id)
-    job = process_image_resize_job.delay(str(uuid.uuid4()), x_session_id, path, width, height)
-    return {"job_id": job.id, "session_id": x_session_id}
+    job_id = str(uuid.uuid4())
+    submit_job(process_image_resize_job, job_id, x_session_id, path, width, height)
+    return {"job_id": job_id, "session_id": x_session_id}
 
 @router.post("/remove-bg")
 async def remove_bg(
@@ -59,5 +64,6 @@ async def remove_bg(
     x_session_id: str = Header(default_factory=lambda: str(uuid.uuid4()))
 ):
     path = await save_upload_file(file, x_session_id)
-    job = process_remove_bg_job.delay(str(uuid.uuid4()), x_session_id, path)
-    return {"job_id": job.id, "session_id": x_session_id}
+    job_id = str(uuid.uuid4())
+    submit_job(process_remove_bg_job, job_id, x_session_id, path)
+    return {"job_id": job_id, "session_id": x_session_id}

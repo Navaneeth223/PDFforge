@@ -27,6 +27,7 @@ async def editor_export_pdf(
     # We return the download link directly or a job_id?
     # For editor export, direct download might be better if it's fast enough.
     # But let's follow the job pattern for consistency.
-    from services.job_queue import process_editor_export_job
-    job = process_editor_export_job.delay(str(uuid.uuid4()), x_session_id, pages)
-    return {"job_id": job.id, "session_id": x_session_id}
+    from services.job_queue import process_editor_export_job, submit_job
+    job_id = str(uuid.uuid4())
+    submit_job(process_editor_export_job, job_id, x_session_id, pages)
+    return {"job_id": job_id, "session_id": x_session_id}

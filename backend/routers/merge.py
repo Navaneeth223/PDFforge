@@ -3,7 +3,7 @@ from typing import List
 import uuid
 from models.schemas import JobResponse
 from services.storage import save_upload_file
-from services.job_queue import process_merge_job
+from services.job_queue import process_merge_job, submit_job
 
 router = APIRouter(tags=["Merge"])
 
@@ -24,6 +24,7 @@ async def merge_pdfs(
         saved_files.append(file_path)
     
     # Fire and forget job
-    job = process_merge_job.delay(str(uuid.uuid4()), session_id, saved_files)
+    job_id = str(uuid.uuid4())
+    submit_job(process_merge_job, job_id, session_id, saved_files)
     
-    return JobResponse(job_id=job.id)
+    return JobResponse(job_id=job_id)

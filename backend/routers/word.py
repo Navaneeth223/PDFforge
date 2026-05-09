@@ -8,7 +8,8 @@ from services.job_queue import (
     process_word_to_text_job,
     process_merge_word_job,
     process_word_compress_job,
-    process_word_unlock_job
+    process_word_unlock_job,
+    submit_job
 )
 
 router = APIRouter(prefix="/word", tags=["Word Tools"])
@@ -19,8 +20,9 @@ async def word_to_pdf(
     x_session_id: str = Header(default_factory=lambda: str(uuid.uuid4()))
 ):
     path = await save_upload_file(file, x_session_id)
-    job = process_word_to_pdf_job.delay(str(uuid.uuid4()), x_session_id, path)
-    return {"job_id": job.id, "session_id": x_session_id}
+    job_id = str(uuid.uuid4())
+    submit_job(process_word_to_pdf_job, job_id, x_session_id, path)
+    return {"job_id": job_id, "session_id": x_session_id}
 
 @router.post("/to-html")
 async def word_to_html(
@@ -28,8 +30,9 @@ async def word_to_html(
     x_session_id: str = Header(default_factory=lambda: str(uuid.uuid4()))
 ):
     path = await save_upload_file(file, x_session_id)
-    job = process_word_to_html_job.delay(str(uuid.uuid4()), x_session_id, path)
-    return {"job_id": job.id, "session_id": x_session_id}
+    job_id = str(uuid.uuid4())
+    submit_job(process_word_to_html_job, job_id, x_session_id, path)
+    return {"job_id": job_id, "session_id": x_session_id}
 
 @router.post("/to-text")
 async def word_to_text(
@@ -37,8 +40,9 @@ async def word_to_text(
     x_session_id: str = Header(default_factory=lambda: str(uuid.uuid4()))
 ):
     path = await save_upload_file(file, x_session_id)
-    job = process_word_to_text_job.delay(str(uuid.uuid4()), x_session_id, path)
-    return {"job_id": job.id, "session_id": x_session_id}
+    job_id = str(uuid.uuid4())
+    submit_job(process_word_to_text_job, job_id, x_session_id, path)
+    return {"job_id": job_id, "session_id": x_session_id}
 
 @router.post("/merge")
 async def merge_word(
@@ -48,8 +52,9 @@ async def merge_word(
     paths = []
     for file in files:
         paths.append(await save_upload_file(file, x_session_id))
-    job = process_merge_word_job.delay(str(uuid.uuid4()), x_session_id, paths)
-    return {"job_id": job.id, "session_id": x_session_id}
+    job_id = str(uuid.uuid4())
+    submit_job(process_merge_word_job, job_id, x_session_id, paths)
+    return {"job_id": job_id, "session_id": x_session_id}
 
 @router.post("/compress")
 async def word_compress(
@@ -57,8 +62,9 @@ async def word_compress(
     x_session_id: str = Header(default_factory=lambda: str(uuid.uuid4()))
 ):
     path = await save_upload_file(file, x_session_id)
-    job = process_word_compress_job.delay(str(uuid.uuid4()), x_session_id, path)
-    return {"job_id": job.id, "session_id": x_session_id}
+    job_id = str(uuid.uuid4())
+    submit_job(process_word_compress_job, job_id, x_session_id, path)
+    return {"job_id": job_id, "session_id": x_session_id}
 
 @router.post("/unlock")
 async def word_unlock(
@@ -67,5 +73,6 @@ async def word_unlock(
     x_session_id: str = Header(default_factory=lambda: str(uuid.uuid4()))
 ):
     path = await save_upload_file(file, x_session_id)
-    job = process_word_unlock_job.delay(str(uuid.uuid4()), x_session_id, path, password)
-    return {"job_id": job.id, "session_id": x_session_id}
+    job_id = str(uuid.uuid4())
+    submit_job(process_word_unlock_job, job_id, x_session_id, path, password)
+    return {"job_id": job_id, "session_id": x_session_id}
