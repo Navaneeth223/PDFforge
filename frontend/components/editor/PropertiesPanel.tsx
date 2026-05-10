@@ -83,7 +83,7 @@ export default function PropertiesPanel() {
 
   const updateProperty = (key: string, value: any) => {
     if (!canvas || !activeObj) return;
-    activeObj.set(key, value);
+    (activeObj as any).set(key, value);
     canvas.renderAll();
   };
 
