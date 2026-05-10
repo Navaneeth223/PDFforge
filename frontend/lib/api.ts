@@ -116,7 +116,7 @@ export const pdfApi = {
 };
 
 // ─── Legacy/Compatibility Export ──────────────────────────────────
-export const apiUpload = async (endpoint: string, formData: FormData) => {
+const apiUploadBase = async (endpoint: string, formData: FormData) => {
   // Try to determine if we should expect a blob or JSON
   const isDirectTool = endpoint.includes('rotate') || 
                        endpoint.includes('compress') || 
@@ -139,6 +139,15 @@ export const apiUpload = async (endpoint: string, formData: FormData) => {
 
   return apiClient.post(url, formData, config);
 };
+
+interface ApiUpload {
+  (endpoint: string, formData: FormData): Promise<AxiosResponse>;
+  post: (endpoint: string, formData: FormData) => Promise<AxiosResponse>;
+}
+
+export const apiUpload: ApiUpload = Object.assign(apiUploadBase, {
+  post: apiUploadBase
+});
 
 // ─── Download Helper ─────────────────────────────────────────────
 
