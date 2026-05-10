@@ -173,7 +173,7 @@ export default function LandingPage() {
               <ul className="text-zinc-500 text-sm space-y-2 text-center md:text-left">
                 <li><Link href="/#tools" className="hover:text-white transition-colors">All Tools</Link></li>
                 <li><Link href="/editor" className="hover:text-white transition-colors font-bold text-indigo-400">Canvas Editor</Link></li>
-                <li><a href="https://github.com/Navaneeth223/docxio" className="hover:text-white transition-colors">GitHub</a></li>
+                <li><a href="https://github.com/Navaneeth223/PDFforge" className="hover:text-white transition-colors">GitHub</a></li>
               </ul>
             </div>
           </div>
