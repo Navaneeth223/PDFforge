@@ -27,7 +27,7 @@ export function useToolSubmit() {
 
       // 1. Direct file response (blob)
       if (response.data instanceof Blob || response.headers['content-type']?.includes('application/pdf')) {
-        const blob = response.data instanceof Blob ? response.data : new Blob([response.data], { type: 'application/pdf' });
+        const blob = response.data instanceof Blob ? response.data : new Blob([response.data as any], { type: 'application/pdf' });
         downloadFile(blob, outputFilename);
         setProgress(100);
         setState('done');
