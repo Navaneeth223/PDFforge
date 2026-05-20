@@ -40,7 +40,10 @@ def export_editor_pdf(session_id: str, pages_data: List[Dict[str, Any]]) -> str:
             img_bytes = base64.b64decode(img_data.split(",")[1])
             img = Image.open(io.BytesIO(img_bytes))
             # Create a new PDF page with the image
-            pdf_bytes = img.convert("RGB").save(io.BytesIO(), format="PDF", resolution=150)
+            # PIL.save() returns None — must write into a named buffer and read it back
+            buf = io.BytesIO()
+            img.convert("RGB").save(buf, format="PDF", resolution=150)
+            pdf_bytes = buf.getvalue()
             # fitz can open from memory
             img_doc = fitz.open("pdf", pdf_bytes)
             doc.insert_pdf(img_doc)
