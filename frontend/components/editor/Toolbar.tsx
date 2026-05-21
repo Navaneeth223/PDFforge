@@ -14,6 +14,7 @@ const TOOLS = [
   { id: 'rect', icon: Square, label: 'Rectangle' },
   { id: 'circle', icon: Circle, label: 'Circle' },
   { id: 'pen', icon: Pencil, label: 'Draw' },
+  { id: 'eraser', icon: Eraser, label: 'Eraser' },
   { id: 'image', icon: ImageIcon, label: 'Image' },
   { id: 'arrow', icon: ArrowUpRight, label: 'Arrow' },
 ];

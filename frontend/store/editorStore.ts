@@ -1,13 +1,14 @@
 import { create } from 'zustand';
 import { fabric } from 'fabric';
 
-export type ToolType = 'select' | 'text' | 'rect' | 'circle' | 'pen' | 'image' | 'arrow' | 'line';
+export type ToolType = 'select' | 'text' | 'rect' | 'circle' | 'pen' | 'image' | 'arrow' | 'line' | 'eraser';
 
 interface PageData {
   imageBase64: string;
   width: number;
   height: number;
   pageNumber: number;
+  canvasJson?: string;
 }
 
 interface EditorState {
@@ -31,11 +32,12 @@ interface EditorState {
   setSelectedObjects: (objects: fabric.Object[]) => void;
   toggleGrid: () => void;
   saveHistory: (state: string) => void;
+  saveCurrentPageObjects: () => void;
   undo: () => void;
   redo: () => void;
 }
 
-export const useEditorStore = create<EditorState>((set) => ({
+export const useEditorStore = create<EditorState>((set, get) => ({
   canvas: null,
   zoom: 1,
   showGrid: false,
@@ -54,6 +56,32 @@ export const useEditorStore = create<EditorState>((set) => ({
   setZoom: (zoom) => set({ zoom }),
   setSelectedObjects: (selectedObjects) => set({ selectedObjects }),
   toggleGrid: () => set((state) => ({ showGrid: !state.showGrid })),
+  saveCurrentPageObjects: () => {
+    const { canvas, pages, currentPageIndex } = get();
+    if (!canvas) return;
+    
+    // Temporarily hide grid before saving JSON
+    const objects = canvas.getObjects();
+    const grid = objects.find(obj => (obj as any).name === 'grid');
+    if (grid) {
+      canvas.remove(grid);
+    }
+    
+    const json = JSON.stringify(canvas.toJSON());
+    
+    if (grid) {
+      canvas.add(grid);
+      canvas.sendToBack(grid);
+    }
+    
+    const updatedPages = [...pages];
+    updatedPages[currentPageIndex] = {
+      ...updatedPages[currentPageIndex],
+      canvasJson: json
+    };
+    set({ pages: updatedPages });
+  },
+
   saveHistory: (stateStr) => set((store) => {
     const newHistory = store.history.slice(0, store.historyIndex + 1);
     newHistory.push(stateStr);

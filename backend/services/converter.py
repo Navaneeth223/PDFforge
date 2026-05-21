@@ -16,36 +16,106 @@ from services.storage import get_output_path, get_session_dir
 # ─── LibreOffice: Office → PDF ─────────────────────────────────────────────────
 
 async def office_to_pdf(session_id: str, input_path: str) -> str:
-    """Convert Office document to PDF using LibreOffice headless (async subprocess)."""
+    """Convert Office document to PDF using LibreOffice headless (async subprocess) or pure-python fallback."""
     session_dir = get_session_dir(session_id)
-    proc = await asyncio.create_subprocess_exec(
-        "libreoffice",
-        "--headless",
-        "--convert-to", "pdf",
-        "--outdir", session_dir,
-        input_path,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-    )
-    try:
-        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120)
-    except asyncio.TimeoutError:
-        proc.kill()
-        raise RuntimeError("LibreOffice conversion timed out after 120 seconds.")
-
-    if proc.returncode != 0:
-        raise RuntimeError(f"LibreOffice failed: {stderr.decode()}")
-
-    # LibreOffice names the output after the input stem
-    stem = os.path.splitext(os.path.basename(input_path))[0]
-    converted_path = os.path.join(session_dir, f"{stem}.pdf")
-    if not os.path.exists(converted_path):
-        raise RuntimeError("LibreOffice did not produce a PDF output.")
-
-    # Rename to UUID
     final_path = get_output_path(session_id, ".pdf")
-    os.rename(converted_path, final_path)
-    return final_path
+    
+    # Try LibreOffice first
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "libreoffice",
+            "--headless",
+            "--convert-to", "pdf",
+            "--outdir", session_dir,
+            input_path,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        try:
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=45)
+            if proc.returncode == 0:
+                stem = os.path.splitext(os.path.basename(input_path))[0]
+                converted_path = os.path.join(session_dir, f"{stem}.pdf")
+                if os.path.exists(converted_path):
+                    os.rename(converted_path, final_path)
+                    return final_path
+        except Exception:
+            try:
+                proc.kill()
+            except Exception:
+                pass
+    except Exception:
+        pass  # Fallback to pure-Python
+
+    # Fallback Mechanism
+    ext = os.path.splitext(input_path)[1].lower()
+    if ext in (".docx", ".doc"):
+        import mammoth
+        from xhtml2pdf import pisa
+        with open(input_path, "rb") as docx_file:
+            result = mammoth.convert_to_html(docx_file)
+            html_content = result.value
+        html_content = f"<html><head><meta charset='utf-8'><style>body {{ font-family: Helvetica, Arial, sans-serif; padding: 20px; }} p {{ margin-bottom: 12px; line-height: 1.4; }}</style></head><body>{html_content}</body></html>"
+        with open(final_path, "wb") as result_file:
+            pisa.CreatePDF(html_content, dest=result_file)
+        return final_path
+    
+    elif ext in (".xlsx", ".xls", ".csv"):
+        from xhtml2pdf import pisa
+        if ext == ".csv":
+            import csv
+            html = ["<html><head><meta charset='utf-8'><style>body { font-family: Helvetica, Arial, sans-serif; } table { border-collapse: collapse; width: 100%; } td, th { border: 1px solid #ddd; padding: 6px; font-size: 10px; }</style></head><body><table>"]
+            with open(input_path, mode='r', encoding='utf-8', errors='ignore') as f:
+                reader = csv.reader(f)
+                for row in reader:
+                    html.append("<tr>")
+                    for cell in row:
+                        html.append(f"<td>{cell}</td>")
+                    html.append("</tr>")
+            html.append("</table></body></html>")
+            html_content = "".join(html)
+        else:
+            from openpyxl import load_workbook
+            wb = load_workbook(input_path, data_only=True)
+            html = ["<html><head><meta charset='utf-8'><style>body { font-family: Helvetica, Arial, sans-serif; } table { border-collapse: collapse; width: 100%; margin-bottom: 20px; } th, td { border: 1px solid #ddd; padding: 8px; font-size: 10px; } th { background-color: #f2f2f2; text-align: left; }</style></head><body>"]
+            for sheetname in wb.sheetnames:
+                ws = wb[sheetname]
+                html.append(f"<h2>{sheetname}</h2>")
+                html.append("<table>")
+                for row in ws.iter_rows(values_only=True):
+                    if all(v is None for v in row):
+                        continue
+                    html.append("<tr>")
+                    for cell in row:
+                        val = "" if cell is None else str(cell)
+                        html.append(f"<td>{val}</td>")
+                    html.append("</tr>")
+                html.append("</table>")
+            html.append("</body></html>")
+            html_content = "".join(html)
+        with open(final_path, "wb") as f:
+            pisa.CreatePDF(html_content, dest=f)
+        return final_path
+
+    elif ext in (".pptx", ".ppt"):
+        from pptx import Presentation
+        from xhtml2pdf import pisa
+        prs = Presentation(input_path)
+        html = ["<html><head><meta charset='utf-8'><style>body { font-family: Helvetica, Arial, sans-serif; } .slide { page-break-after: always; border: 1px solid #ccc; padding: 25px; margin-bottom: 20px; } h2 { color: #4f46e5; border-bottom: 1px solid #eee; padding-bottom: 8px; } p { font-size: 12px; line-height: 1.4; color: #374151; }</style></head><body>"]
+        for i, slide in enumerate(prs.slides):
+            html.append(f"<div class='slide'>")
+            html.append(f"<h2>Slide {i + 1}</h2>")
+            for shape in slide.shapes:
+                if hasattr(shape, "text") and shape.text.strip():
+                    html.append(f"<p>{shape.text.strip()}</p>")
+            html.append("</div>")
+        html.append("</body></html>")
+        html_content = "".join(html)
+        with open(final_path, "wb") as f:
+            pisa.CreatePDF(html_content, dest=f)
+        return final_path
+        
+    raise RuntimeError(f"Conversion failed: LibreOffice not found and format '{ext}' has no fallback.")
 
 
 # ─── WeasyPrint: HTML → PDF ────────────────────────────────────────────────────
@@ -53,15 +123,31 @@ async def office_to_pdf(session_id: str, input_path: str) -> str:
 def html_to_pdf(session_id: str,
                 html_content: Optional[str],
                 url: Optional[str]) -> str:
-    from weasyprint import HTML
     out_path = get_output_path(session_id, ".pdf")
-    if url:
-        HTML(url=url).write_pdf(out_path)
-    elif html_content:
-        HTML(string=html_content).write_pdf(out_path)
-    else:
-        raise ValueError("Either html_content or url must be provided.")
+    try:
+        from weasyprint import HTML
+        if url:
+            HTML(url=url).write_pdf(out_path)
+        elif html_content:
+            HTML(string=html_content).write_pdf(out_path)
+        else:
+            raise ValueError("Either html_content or url must be provided.")
+    except Exception:
+        # Fallback to xhtml2pdf
+        from xhtml2pdf import pisa
+        if url:
+            import requests
+            resp = requests.get(url, timeout=30)
+            content = resp.text
+        elif html_content:
+            content = html_content
+        else:
+            raise ValueError("Either html_content or url must be provided.")
+        
+        with open(out_path, "wb") as f:
+            pisa.CreatePDF(content, dest=f)
     return out_path
+
 
 
 # ─── PDF → Word (python-docx) ──────────────────────────────────────────────────

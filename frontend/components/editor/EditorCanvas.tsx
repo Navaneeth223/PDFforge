@@ -128,24 +128,83 @@ export default function EditorCanvas() {
     if (!canvas || !pages[currentPageIndex]) return;
 
     const page = pages[currentPageIndex];
-    fabric.Image.fromURL(page.imageBase64, (img) => {
-      canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
-        scaleX: canvas.width! / img.width!,
-        scaleY: canvas.height! / img.height!,
+    
+    // Clear canvas of all objects (including edits from previous pages)
+    canvas.clear();
+    canvas.backgroundColor = "#ffffff";
+    
+    // Re-draw grid if active
+    if (showGrid) {
+      const grid = 50;
+      const width = canvas.width || 800;
+      const height = canvas.height || 1100;
+      
+      const lines = [];
+      for (let i = 0; i < (width / grid); i++) {
+        lines.push(new fabric.Line([i * grid, 0, i * grid, height], { 
+          stroke: '#e5e7eb', 
+          selectable: false, 
+          evented: false, 
+          opacity: 0.5 
+        }));
+      }
+      for (let i = 0; i < (height / grid); i++) {
+        lines.push(new fabric.Line([0, i * grid, width, i * grid], { 
+          stroke: '#e5e7eb', 
+          selectable: false, 
+          evented: false, 
+          opacity: 0.5 
+        }));
+      }
+      const gridGroup = new fabric.Group(lines, { 
+        selectable: false, 
+        evented: false,
+        name: 'grid'
       });
-    });
-  }, [pages, currentPageIndex]);
+      canvas.add(gridGroup);
+      canvas.sendToBack(gridGroup);
+    }
+
+    if (page.canvasJson) {
+      canvas.loadFromJSON(page.canvasJson, () => {
+        // Ensure grid remains at the back
+        const gridObj = canvas.getObjects().find(obj => (obj as any).name === 'grid');
+        if (gridObj) {
+          canvas.sendToBack(gridObj);
+        }
+        canvas.renderAll();
+      });
+    } else if (page.imageBase64) {
+      fabric.Image.fromURL(page.imageBase64, (img) => {
+        canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+          scaleX: canvas.width! / img.width!,
+          scaleY: canvas.height! / img.height!,
+        });
+      });
+    }
+  }, [pages, currentPageIndex, showGrid]);
 
   // Handle Tool Change
   useEffect(() => {
     const canvas = useEditorStore.getState().canvas;
     if (!canvas) return;
 
-    canvas.isDrawingMode = activeTool === "pen";
+    canvas.isDrawingMode = activeTool === "pen" || activeTool === "eraser";
     if (canvas.isDrawingMode) {
-      canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
-      canvas.freeDrawingBrush.width = 5;
-      canvas.freeDrawingBrush.color = "#000000";
+      if (activeTool === "eraser") {
+        if ((fabric as any).EraserBrush) {
+          canvas.freeDrawingBrush = new (fabric as any).EraserBrush(canvas);
+        } else {
+          // Fallback to white pencil whiteout brush
+          canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+          canvas.freeDrawingBrush.color = "#ffffff";
+        }
+        canvas.freeDrawingBrush.width = 30;
+      } else {
+        canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+        canvas.freeDrawingBrush.width = 5;
+        canvas.freeDrawingBrush.color = "#000000";
+      }
     }
   }, [activeTool]);
 

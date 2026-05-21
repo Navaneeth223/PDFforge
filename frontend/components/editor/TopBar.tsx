@@ -4,7 +4,7 @@ import Link from "next/link";
 import { 
   Download, Save, Share2, Undo2, Redo2, 
   ChevronDown, FileCode, Printer, HelpCircle,
-  Menu
+  Menu, ChevronLeft, ChevronRight, Plus, Trash2
 } from "lucide-react";
 import { useEditorStore } from "@/store/editorStore";
 import axios from "axios";
@@ -12,27 +12,79 @@ import { toast } from "sonner";
 import { useState } from "react";
 
 export default function TopBar() {
-  const { canvas, pages, undo, redo, zoom, setZoom } = useEditorStore();
+  const { 
+    canvas, 
+    pages, 
+    currentPageIndex, 
+    setCurrentPageIndex, 
+    setPages, 
+    saveCurrentPageObjects, 
+    undo, 
+    redo, 
+    zoom, 
+    setZoom 
+  } = useEditorStore();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
 
   const handleExport = async () => {
     if (!canvas) return;
     
-    toast.loading("Generating PDF...", { id: "export" });
+    toast.loading("Generating Multi-page PDF...", { id: "export" });
     try {
       const { PDFDocument } = await import('pdf-lib');
       const pdfDoc = await PDFDocument.create();
-      const page = pdfDoc.addPage([canvas.width || 800, canvas.height || 1100]);
+      const { fabric } = await import('fabric');
       
-      const imgData = canvas.toDataURL({ format: "png", quality: 1.0, multiplier: 2 });
-      const imgBytes = await fetch(imgData).then(res => res.arrayBuffer());
-      const image = await pdfDoc.embedPng(imgBytes);
+      // Save current page state first
+      saveCurrentPageObjects();
       
-      page.drawImage(image, { 
-        x: 0, y: 0, 
-        width: canvas.width || 800, 
-        height: canvas.height || 1100 
-      });
+      // Read pages state from store
+      const allPages = useEditorStore.getState().pages;
+      
+      // Create offscreen canvas to render each page
+      const tempEl = document.createElement("canvas");
+      tempEl.width = canvas.width || 800;
+      tempEl.height = canvas.height || 1100;
+      const tempCanvas = new fabric.Canvas(tempEl);
+      
+      for (const page of allPages) {
+        tempCanvas.clear();
+        tempCanvas.backgroundColor = "#ffffff";
+        
+        await new Promise<void>((resolve) => {
+          if (page.canvasJson) {
+            tempCanvas.loadFromJSON(page.canvasJson, () => {
+              tempCanvas.renderAll();
+              resolve();
+            });
+          } else if (page.imageBase64) {
+            fabric.Image.fromURL(page.imageBase64, (img) => {
+              tempCanvas.setBackgroundImage(img, () => {
+                tempCanvas.renderAll();
+                resolve();
+              }, {
+                scaleX: tempCanvas.width! / img.width!,
+                scaleY: tempCanvas.height! / img.height!,
+              });
+            });
+          } else {
+            resolve();
+          }
+        });
+        
+        const imgData = tempCanvas.toDataURL({ format: "png", quality: 1.0, multiplier: 1.5 });
+        const imgBytes = await fetch(imgData).then(res => res.arrayBuffer());
+        const image = await pdfDoc.embedPng(imgBytes);
+        
+        const pdfPage = pdfDoc.addPage([tempCanvas.width || 800, tempCanvas.height || 1100]);
+        pdfPage.drawImage(image, { 
+          x: 0, y: 0, 
+          width: tempCanvas.width || 800, 
+          height: tempCanvas.height || 1100 
+        });
+      }
+      
+      tempCanvas.dispose();
       
       const pdfBytes = await pdfDoc.save();
       const blob = new Blob([pdfBytes as any], { type: "application/pdf" });
@@ -163,6 +215,70 @@ export default function TopBar() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Page Navigation & Manager */}
+      <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl p-1 px-2">
+        <button 
+          disabled={currentPageIndex === 0}
+          onClick={() => {
+            saveCurrentPageObjects();
+            setCurrentPageIndex(currentPageIndex - 1);
+          }}
+          className="p-1.5 text-zinc-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors"
+          title="Previous Page"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <span className="text-xs text-white font-mono font-bold px-2">
+          Page {currentPageIndex + 1} of {pages.length}
+        </span>
+        <button 
+          disabled={currentPageIndex === pages.length - 1}
+          onClick={() => {
+            saveCurrentPageObjects();
+            setCurrentPageIndex(currentPageIndex + 1);
+          }}
+          className="p-1.5 text-zinc-400 hover:text-white disabled:opacity-30 disabled:pointer-events-none transition-colors"
+          title="Next Page"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+        <div className="w-[1px] h-4 bg-white/10 mx-1" />
+        <button 
+          onClick={() => {
+            saveCurrentPageObjects();
+            const newPages = [...pages];
+            newPages.splice(currentPageIndex + 1, 0, {
+              imageBase64: "", // blank
+              width: 800,
+              height: 1100,
+              pageNumber: pages.length + 1
+            });
+            newPages.forEach((pg, idx) => pg.pageNumber = idx + 1);
+            setPages(newPages);
+            setCurrentPageIndex(currentPageIndex + 1);
+            toast.success("Blank Page Added!");
+          }}
+          className="p-1.5 text-indigo-400 hover:text-indigo-300 transition-colors"
+          title="Add Blank Page"
+        >
+          <Plus className="w-4 h-4" />
+        </button>
+        <button 
+          disabled={pages.length <= 1}
+          onClick={() => {
+            const newPages = pages.filter((_, idx) => idx !== currentPageIndex);
+            newPages.forEach((pg, idx) => pg.pageNumber = idx + 1);
+            setPages(newPages);
+            setCurrentPageIndex(Math.max(0, currentPageIndex - 1));
+            toast.success("Page Deleted!");
+          }}
+          className="p-1.5 text-red-400 hover:text-red-300 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+          title="Delete Page"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
       </div>
 
       <div className="flex items-center gap-3">
