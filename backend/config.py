@@ -1,14 +1,15 @@
 from pydantic_settings import BaseSettings
-from pydantic import field_validator
 from typing import List
 import os
 import tempfile
-import json
 
 class Settings(BaseSettings):
     # API
     SECRET_KEY: str = "docxio-dev-secret-key"
-    ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    # Stored as a raw comma-separated string to avoid pydantic-settings v2
+    # attempting json.loads() on the value before any validator can intercept it.
+    # Use the `allowed_origins` property to get the parsed list.
+    ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
 
     # Files
     TEMP_DIR: str = os.path.join(tempfile.gettempdir(), "docxio")
@@ -18,16 +19,10 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
-    @field_validator("ALLOWED_ORIGINS", mode="before")
-    @classmethod
-    def parse_allowed_origins(cls, v):
-        """Accept a JSON array string OR a comma-separated string from env vars."""
-        if isinstance(v, str):
-            v = v.strip()
-            if v.startswith("["):
-                return json.loads(v)
-            return [origin.strip() for origin in v.split(",") if origin.strip()]
-        return v
+    @property
+    def allowed_origins(self) -> List[str]:
+        """Parse comma-separated ALLOWED_ORIGINS into a list."""
+        return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",") if origin.strip()]
 
     @property
     def redis_url(self) -> str:
@@ -38,3 +33,4 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
 
 settings = Settings()
+
